@@ -1,0 +1,26 @@
+From 55ec7393fc2d4384e3024ec907b9e68740ef1bad Mon Sep 17 00:00:00 2001
+From: Levi Zim <rsworktech@outlook.com>
+Date: Sun, 14 Jan 2024 22:19:16 +0800
+Subject: [PATCH] avbtool.py: fix signing by using openssl-1.1
+
+Change-Id: I57f49a638c7276c173642b44d80142be7ffc314e
+---
+ avbtool.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/avbtool.py b/avbtool.py
+index 05dc72c..1a62e34 100755
+--- a/avbtool.py
++++ b/avbtool.py
+@@ -637,7 +637,7 @@ def verify_vbmeta_signature(vbmeta_header, vbmeta_blob):
+ 
+     with tempfile.NamedTemporaryFile() as der_tmpfile:
+       p = subprocess.Popen(
+-          ['openssl', 'asn1parse', '-genconf', asn1_tmpfile.name, '-out',
++          ['openssl-1.1', 'asn1parse', '-genconf', asn1_tmpfile.name, '-out',
+            der_tmpfile.name, '-noout'])
+       retcode = p.wait()
+       if retcode != 0:
+-- 
+2.43.0
+
