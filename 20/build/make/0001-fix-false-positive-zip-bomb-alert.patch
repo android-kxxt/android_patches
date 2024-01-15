@@ -1,0 +1,28 @@
+From 8dc13b58d0404b8e56e52871997283f936aab836 Mon Sep 17 00:00:00 2001
+From: Levi Zim <rsworktech@outlook.com>
+Date: Mon, 15 Jan 2024 10:12:31 +0800
+Subject: [PATCH] fix false positive zip bomb alert
+
+It's because ArchLinux's unzip is too new
+
+Change-Id: Iabb997a032a44aacc3fa2eff342045993abc7949
+---
+ tools/releasetools/common.py | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/tools/releasetools/common.py b/tools/releasetools/common.py
+index 0785c746e..e5fa02a59 100644
+--- a/tools/releasetools/common.py
++++ b/tools/releasetools/common.py
+@@ -2045,7 +2045,7 @@ def UnzipToDir(filename, dirname, patterns=None):
+       return
+     cmd.extend(filtered)
+ 
+-  RunAndCheckOutput(cmd)
++  RunAndCheckOutput(cmd, env={ "UNZIP_DISABLE_ZIPBOMB_DETECTION": "TRUE" })
+ 
+ 
+ def UnzipTemp(filename, patterns=None):
+-- 
+2.43.0
+
