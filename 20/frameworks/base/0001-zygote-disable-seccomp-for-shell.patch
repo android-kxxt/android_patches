@@ -1,0 +1,28 @@
+From 73c74594927341cf58a18dbc0a5d8f80c144d3cc Mon Sep 17 00:00:00 2001
+From: Levi Zim <rsworktech@outlook.com>
+Date: Mon, 22 Jan 2024 22:27:57 +0800
+Subject: [PATCH] zygote: disable seccomp for shell
+
+Change-Id: I8fc28fb5df96ebfcebf0baf0bc4921108ae48f2c
+---
+ core/jni/com_android_internal_os_Zygote.cpp | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/core/jni/com_android_internal_os_Zygote.cpp b/core/jni/com_android_internal_os_Zygote.cpp
+index c8b85c314aca..033f5e2a3e08 100644
+--- a/core/jni/com_android_internal_os_Zygote.cpp
++++ b/core/jni/com_android_internal_os_Zygote.cpp
+@@ -640,7 +640,9 @@ static void SetUpSeccompFilter(uid_t uid, bool is_child_zygote) {
+   }
+ 
+   // Apply system or app filter based on uid.
+-  if (uid >= AID_APP_START) {
++  if (uid == AID_SHELL) {
++    // Do not apply seccomp filter to PFA SHELL
++  } else if (uid >= AID_APP_START) {
+     if (is_child_zygote) {
+       set_app_zygote_seccomp_filter();
+     } else {
+-- 
+2.43.0
+
