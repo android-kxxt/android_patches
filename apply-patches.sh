@@ -8,7 +8,11 @@ colorize
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 SUBDIR=20
-TOP="$(realpath "$SCRIPT_DIR/../")"
+if [ -n "$ANDROID_BUILD_TOP" ]; then
+    TOP="$ANDROID_BUILD_TOP"
+else
+    TOP="$(realpath "$SCRIPT_DIR/../")"
+fi
 
 # Apply patches
 msg "AOSP source tree: $TOP"
