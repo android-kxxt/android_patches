@@ -28,12 +28,12 @@ changes=(
 #353217 # gmscompat: Use Nexus 6P fingerprint for CTS/Integrity
 #353218 # gmscompat: Make CTS/Play Integrity pass again
 #373862 # gmscompat: Switch to asus X00HD fingeprint
-)
 #357510 # gmscompat: also spoof props for samsung/sec apps
 #361101 # gmscompat: Use Pixel 2 fingerprint for CTS/Integrity
 #365854 # gmscompat: Spoof user/release-keys build
+)
 repopick -f -P frameworks/base ${changes[@]}&
-
+repopick -f -P frameworks/base -t 20-snet
 # frameworks/opt/telephony
 changes=(
 349338 # Disable proguard for CellularNetworkServiceProvider
