@@ -57,9 +57,10 @@ changes=(
 352663 # sensors: Fix locking around setOperationMode and activate
 352664 # sensors: Add udfps long press sensor
 352665 # sensors: Handle fod_pressed_state without coordinates
-372459 # Import qti vibrator effect and rename
-356442 # vibrator: effect: Read vibration fifo data from vendor
+375801 # hidl: biometrics: fingerprint: Handle fpc_fod quirk
 )
+#372459 # Import qti vibrator effect and rename
+#356442 # vibrator: effect: Read vibration fifo data from vendor
 #356436 # vibrator: Import from LA.VENDOR.13.2.0.r1-15400-KAILUA.QSSI14.0
 #356437 # vibrator: Rename to avoid conflicts
 #356438 # vibrator: aidl: Simplify soc check and drop prop dep
