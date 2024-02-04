@@ -14,7 +14,7 @@ changes=(
 342863 # CCodec: Use pipelineRoom only for HW decoder
 342864 # codec2: Change a Info print into Verbose
 )
-repopick -P frameworks/av ${changes[@]}&
+repopick -f -P frameworks/av ${changes[@]}&
 
 # frameworks/base
 changes=(
@@ -69,7 +69,7 @@ changes=(
 #356441 # vibrator: Hook USE_EFFECT_STREAM up
 #356442 # vibrator: effect: Read vibration fifo data from vendor
 #356482 # vibrator: Don't support compose effects if primitve_duration node does not exist
-repopick -P hardware/xiaomi ${changes[@]}&
+repopick -f -P hardware/xiaomi ${changes[@]}&
 
 # vendor/lineage
 changes=(
