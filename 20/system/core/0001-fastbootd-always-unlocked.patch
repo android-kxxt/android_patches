@@ -1,0 +1,32 @@
+From 1d03c8119ad76015d415b0cb0d3df75f9c14fdd1 Mon Sep 17 00:00:00 2001
+From: kxxt <rsworktech@outlook.com>
+Date: Sun, 4 Feb 2024 15:11:45 +0800
+Subject: [PATCH] fastbootd: always unlocked
+
+Change-Id: Iaaef9ce5454b97602a6011b67f1ce47bdc86830b
+---
+ fastboot/device/utility.cpp | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/fastboot/device/utility.cpp b/fastboot/device/utility.cpp
+index a14eea376..7043f1228 100644
+--- a/fastboot/device/utility.cpp
++++ b/fastboot/device/utility.cpp
+@@ -196,12 +196,8 @@ std::vector<std::string> ListPartitions(FastbootDevice* device) {
+ }
+ 
+ bool GetDeviceLockStatus() {
+-    std::string cmdline;
+-    // Return lock status true if unable to read kernel command line.
+-    if (!android::base::ReadFileToString("/proc/cmdline", &cmdline)) {
+-        return true;
+-    }
+-    return cmdline.find("androidboot.verifiedbootstate=orange") == std::string::npos;
++    // The device is unlocked anyway.
++    return false;
+ }
+ 
+ bool UpdateAllPartitionMetadata(FastbootDevice* device, const std::string& super_name,
+-- 
+2.43.0
+
