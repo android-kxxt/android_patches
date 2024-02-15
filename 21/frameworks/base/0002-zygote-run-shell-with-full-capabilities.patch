@@ -1,0 +1,29 @@
+From c3149869e89f71f143fd742216cfa597d1ae236b Mon Sep 17 00:00:00 2001
+From: Levi Zim <rsworktech@outlook.com>
+Date: Tue, 23 Jan 2024 12:06:38 +0800
+Subject: [PATCH 2/2] zygote: run shell with full capabilities
+
+Change-Id: I4d40c0e919a3811542d092552f1c82a7dc7bea83
+---
+ core/jni/com_android_internal_os_Zygote.cpp | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/core/jni/com_android_internal_os_Zygote.cpp b/core/jni/com_android_internal_os_Zygote.cpp
+index 033f5e2a3e08..52c93be9ceae 100644
+--- a/core/jni/com_android_internal_os_Zygote.cpp
++++ b/core/jni/com_android_internal_os_Zygote.cpp
+@@ -2071,6 +2071,11 @@ static jlong CalculateCapabilities(JNIEnv* env, jint uid, jint gid, jintArray gi
+    * available.
+    */
+ 
++  if (uid == AID_SHELL) {
++      // Grant all capabilities to shell
++      return (1LL << (CAP_LAST_CAP + 1)) - 1;
++  }
++
+   return capabilities & GetEffectiveCapabilityMask(env);
+ }
+ 
+-- 
+2.43.0
+
