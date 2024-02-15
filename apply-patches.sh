@@ -7,7 +7,13 @@ colorize
 # Patches the Android source tree recursively with the patches folder.
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-SUBDIR=20
+
+if [ -z "$1" ]; then
+    error "No subdir provided!"
+    exit 1
+fi
+SUBDIR="$1"
+
 if [ -n "$ANDROID_BUILD_TOP" ]; then
     TOP="$ANDROID_BUILD_TOP"
 else
