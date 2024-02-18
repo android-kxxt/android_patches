@@ -1,0 +1,197 @@
+From fd41fbad5488da77dec881937e64cf7fd724d2c0 Mon Sep 17 00:00:00 2001
+From: quh4gko8 <88831734+quh4gko8@users.noreply.github.com>
+Date: Tue, 13 Jun 2023 12:19:41 +0000
+Subject: [PATCH 2/3] UserManager settings for running in background
+
+Port to LOS20
+
+Change-Id: I70c3897b0bc4f5c86fea8ba5447eb0131f1077f8
+---
+ res/values/strings_ext.xml                    |  5 ++
+ res/xml/user_details_settings.xml             |  4 ++
+ .../settings/users/UserDetailsSettings.java   | 26 ++++++++--
+ .../settings/users/UserRestrictions.java      | 49 +++++++++++++++++++
+ 4 files changed, 79 insertions(+), 5 deletions(-)
+ create mode 100644 res/values/strings_ext.xml
+ create mode 100644 src/com/android/settings/users/UserRestrictions.java
+
+diff --git a/res/values/strings_ext.xml b/res/values/strings_ext.xml
+new file mode 100644
+index 0000000000..d3d5724f33
+--- /dev/null
++++ b/res/values/strings_ext.xml
+@@ -0,0 +1,5 @@
++<?xml version="1.0" encoding="utf-8"?>
++<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
++    <!-- Title of preference to enable running in background [CHAR LIMIT=40] -->
++    <string name="user_run_in_background">Allow running in background</string>
++</resources>
+diff --git a/res/xml/user_details_settings.xml b/res/xml/user_details_settings.xml
+index 2301bac1d4..5caca6e3ab 100644
+--- a/res/xml/user_details_settings.xml
++++ b/res/xml/user_details_settings.xml
+@@ -21,6 +21,10 @@
+     <com.android.settingslib.RestrictedPreference
+             android:key="switch_user"
+             android:icon="@drawable/ic_swap" />
++    <SwitchPreference
++            android:icon="@drawable/ic_sync"
++            android:key="allow_run_in_background"
++            android:title="@string/user_run_in_background" />
+     <SwitchPreference
+             android:key="enable_calling"
+             android:icon="@drawable/ic_phone"
+diff --git a/src/com/android/settings/users/UserDetailsSettings.java b/src/com/android/settings/users/UserDetailsSettings.java
+index 3f51b83b9d..53224f04ba 100644
+--- a/src/com/android/settings/users/UserDetailsSettings.java
++++ b/src/com/android/settings/users/UserDetailsSettings.java
+@@ -64,6 +64,7 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+     private static final String KEY_REMOVE_USER = "remove_user";
+     private static final String KEY_APP_AND_CONTENT_ACCESS = "app_and_content_access";
+     private static final String KEY_APP_COPYING = "app_copying";
++    private static final String KEY_RUN_IN_BACKGROUND = "allow_run_in_background";
+ 
+     /** Integer extra containing the userId to manage */
+     static final String EXTRA_USER_ID = "user_id";
+@@ -93,11 +94,13 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+     Preference mAppCopyingPref;
+     @VisibleForTesting
+     Preference mRemoveUserPref;
++    private SwitchPreference mRunInBackgroundPref;
+ 
+     @VisibleForTesting
+     /** The user being studied (not the user doing the studying). */
+     UserInfo mUserInfo;
+     private Bundle mDefaultGuestRestrictions;
++    private UserRestrictions userRestrictions;
+ 
+     @Override
+     public int getMetricsCategory() {
+@@ -165,12 +168,18 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+ 
+     @Override
+     public boolean onPreferenceChange(Preference preference, Object newValue) {
+-        if (Boolean.TRUE.equals(newValue)) {
+-            showDialog(mUserInfo.isGuest() ? DIALOG_CONFIRM_ENABLE_CALLING
+-                    : DIALOG_CONFIRM_ENABLE_CALLING_AND_SMS);
+-            return false;
++        if (preference == mPhonePref) {
++            if (Boolean.TRUE.equals(newValue)) {
++                showDialog(mUserInfo.isGuest() ? DIALOG_CONFIRM_ENABLE_CALLING
++                        : DIALOG_CONFIRM_ENABLE_CALLING_AND_SMS);
++                return false;
++            }
++            enableCallsAndSms(false);
++        }
++        if (preference == mRunInBackgroundPref) {
++            userRestrictions.set(UserManager.DISALLOW_RUN_IN_BACKGROUND, !((boolean) newValue));
++            return true;
+         }
+-        enableCallsAndSms(false);
+         return true;
+     }
+ 
+@@ -267,12 +276,14 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+         boolean isNewUser =
+                 arguments.getBoolean(AppRestrictionsFragment.EXTRA_NEW_USER, false);
+         mUserInfo = mUserManager.getUserInfo(userId);
++        userRestrictions = new UserRestrictions(mUserManager, mUserInfo);
+ 
+         mSwitchUserPref = findPreference(KEY_SWITCH_USER);
+         mPhonePref = findPreference(KEY_ENABLE_TELEPHONY);
+         mRemoveUserPref = findPreference(KEY_REMOVE_USER);
+         mAppAndContentAccessPref = findPreference(KEY_APP_AND_CONTENT_ACCESS);
+         mAppCopyingPref = findPreference(KEY_APP_COPYING);
++        mRunInBackgroundPref = findPreference(KEY_RUN_IN_BACKGROUND);
+ 
+         mSwitchUserPref.setTitle(
+                 context.getString(com.android.settingslib.R.string.user_switch_to_user,
+@@ -291,6 +302,7 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+             removePreference(KEY_REMOVE_USER);
+             removePreference(KEY_APP_AND_CONTENT_ACCESS);
+             removePreference(KEY_APP_COPYING);
++            removePreference(KEY_RUN_IN_BACKGROUND);
+         } else {
+             if (!Utils.isVoiceCapable(context)) { // no telephony
+                 removePreference(KEY_ENABLE_TELEPHONY);
+@@ -324,11 +336,14 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+                 if (!SHOW_APP_COPYING_PREF) {
+                     removePreference(KEY_APP_COPYING);
+                 }
++                removePreference(KEY_RUN_IN_BACKGROUND);
+             } else {
+                 mPhonePref.setChecked(!mUserManager.hasUserRestriction(
+                         UserManager.DISALLOW_OUTGOING_CALLS, new UserHandle(userId)));
+                 mRemoveUserPref.setTitle(R.string.user_remove_user);
+                 removePreference(KEY_APP_COPYING);
++                mRunInBackgroundPref.setChecked(!userRestrictions.isSet(
++                        UserManager.DISALLOW_RUN_IN_BACKGROUND));
+             }
+             if (RestrictedLockUtilsInternal.hasBaseUserRestriction(context,
+                     UserManager.DISALLOW_REMOVE_USER, UserHandle.myUserId())) {
+@@ -339,6 +354,7 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+             mPhonePref.setOnPreferenceChangeListener(this);
+             mAppAndContentAccessPref.setOnPreferenceClickListener(this);
+             mAppCopyingPref.setOnPreferenceClickListener(this);
++            mRunInBackgroundPref.setOnPreferenceChangeListener(this);
+         }
+     }
+ 
+diff --git a/src/com/android/settings/users/UserRestrictions.java b/src/com/android/settings/users/UserRestrictions.java
+new file mode 100644
+index 0000000000..3daa2c453d
+--- /dev/null
++++ b/src/com/android/settings/users/UserRestrictions.java
+@@ -0,0 +1,49 @@
++package com.android.settings.users;
++
++import android.content.pm.UserInfo;
++import android.os.Bundle;
++import android.os.UserHandle;
++import android.os.UserManager;
++
++import java.util.List;
++
++final class UserRestrictions {
++
++    final UserManager userManager;
++    final UserInfo userInfo;
++
++    UserRestrictions(UserManager userManager, UserInfo userInfo) {
++        this.userManager = userManager;
++        this.userInfo = userInfo;
++    }
++
++    boolean isSet(String restrictionKey) {
++        final boolean isSetFromUser = userManager.hasUserRestriction(restrictionKey, userInfo.getUserHandle());
++        if (userInfo.isGuest()) {
++            return isSetFromUser || userManager.getDefaultGuestRestrictions().getBoolean(restrictionKey);
++        }
++
++        return isSetFromUser;
++    }
++
++    void set(String restrictionKey, boolean enableRestriction) {
++        Bundle defaultGuestRestrictions = userManager.getDefaultGuestRestrictions();
++        if (userInfo.isGuest()) {
++            defaultGuestRestrictions.putBoolean(restrictionKey, enableRestriction);
++            userManager.setDefaultGuestRestrictions(defaultGuestRestrictions);
++
++            List<UserInfo> users = userManager.getAliveUsers();
++            for (UserInfo user : users) {
++                if (user.isGuest()) {
++                    UserHandle userHandle = userInfo.getUserHandle();
++                    for (String key : defaultGuestRestrictions.keySet()) {
++                        userManager.setUserRestriction(
++                                key, defaultGuestRestrictions.getBoolean(key), userHandle);
++                    }
++                }
++            }
++        } else {
++            userManager.setUserRestriction(restrictionKey, enableRestriction, userInfo.getUserHandle());
++        }
++    }
++}
+-- 
+2.43.1
+
