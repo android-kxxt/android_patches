@@ -20,20 +20,20 @@ repopick -f -P frameworks/av ${changes[@]}&
 changes=(
 351262 # Camera: Expose aux camera if packagename is null
 
-#334343 # Alter model name to avoid SafetyNet HW attestation enforcement
-#334344 # keystore: Block key attestation for SafetyNet
-#349090 # AttestationHooks: Set shipping level to 32 for devices >=33
-#353215 # Limit SafetyNet workarounds to unstable GMS process
-#353216 # gmscompat: Apply the SafetyNet workaround to Play Store aswell
-#353217 # gmscompat: Use Nexus 6P fingerprint for CTS/Integrity
-#353218 # gmscompat: Make CTS/Play Integrity pass again
-#373862 # gmscompat: Switch to asus X00HD fingeprint
-#357510 # gmscompat: also spoof props for samsung/sec apps
-#361101 # gmscompat: Use Pixel 2 fingerprint for CTS/Integrity
-#365854 # gmscompat: Spoof user/release-keys build
+334343 # Alter model name to avoid SafetyNet HW attestation enforcement
+334344 # keystore: Block key attestation for SafetyNet
+349090 # AttestationHooks: Set shipping level to 32 for devices >=33
+353215 # Limit SafetyNet workarounds to unstable GMS process
+353216 # gmscompat: Apply the SafetyNet workaround to Play Store aswell
+353217 # gmscompat: Use Nexus 6P fingerprint for CTS/Integrity
+353218 # gmscompat: Make CTS/Play Integrity pass again
+# 373862 # gmscompat: Switch to asus X00HD fingeprint
+357510 # gmscompat: also spoof props for samsung/sec apps
+# 361101 # gmscompat: Use Pixel 2 fingerprint for CTS/Integrity
+365854 # gmscompat: Spoof user/release-keys build
+# 373892 # gmscompat: Use new info
 )
 repopick -f -P frameworks/base ${changes[@]}&
-repopick -f -P frameworks/base -t 20-snet
 # frameworks/opt/telephony
 changes=(
 349338 # Disable proguard for CellularNetworkServiceProvider
@@ -57,7 +57,6 @@ changes=(
 352663 # sensors: Fix locking around setOperationMode and activate
 352664 # sensors: Add udfps long press sensor
 352665 # sensors: Handle fod_pressed_state without coordinates
-375801 # hidl: biometrics: fingerprint: Handle fpc_fod quirk
 )
 #372459 # Import qti vibrator effect and rename
 #356442 # vibrator: effect: Read vibration fifo data from vendor
