@@ -1,4 +1,4 @@
-From fbf51d8b2b4c19186576c1eb80435b161e24d9a1 Mon Sep 17 00:00:00 2001
+From 49669b1b08208d367a44a13d25a6bc9ae2f9675d Mon Sep 17 00:00:00 2001
 From: June <june@eridan.me>
 Date: Sat, 19 Mar 2022 17:10:28 +0200
 Subject: [PATCH] Support forwarding notifications from other users
@@ -8,12 +8,23 @@ Commit history:
 Before Android 13:
 https://github.com/GrapheneOS/platform_frameworks_base/commits/30ab1eae4cd03270f0dce82a67a0122df7fb7c29
 
+13: a40e627709a7
+
 Signed-off-by: June <june@eridan.me>
 Co-authored-by: inthewaves <inthewaves@pm.me>
 Co-authored-by: June <june@eridan.me>
 Co-authored-by: quh4gko8 <88831734+quh4gko8@users.noreply.github.com>
 Co-authored-by: Pratyush <codelab@pratyush.dev>
 ---
+ core/java/android/provider/Settings.java      |  11 +
+ .../SystemNotificationChannels.java           |   8 +
+ core/res/AndroidManifest.xml                  |   1 +
+ core/res/res/values/strings.xml               |   6 +
+ core/res/res/values/symbols.xml               |   6 +
+ .../NotificationManagerService.java           | 404 ++++++++++++++++++
+ .../server/notification/ZenModeHelper.java    | 128 ++++++
+ 7 files changed, 564 insertions(+)
+
 diff --git a/core/java/android/provider/Settings.java b/core/java/android/provider/Settings.java
 index 7f4aa2cbe251..c61fba9f9a5e 100644
 --- a/core/java/android/provider/Settings.java
@@ -75,21 +86,20 @@ index 14cb052b121f..d77bd6736c28 100644
      <protected-broadcast android:name="EventConditionProvider.EVALUATE" />
      <protected-broadcast android:name="SnoozeHelper.EVALUATE" />
 diff --git a/core/res/res/values/strings.xml b/core/res/res/values/strings.xml
-index 9c018c30f9e3..d5c7315e25c2 100644
+index 9c018c30f9e3..ab8a3c43463e 100644
 --- a/core/res/res/values/strings.xml
 +++ b/core/res/res/values/strings.xml
-@@ -18,6 +18,11 @@
- */
- -->
- <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+@@ -6299,4 +6299,10 @@ ul.</string>
+     <string name="keyboard_layout_notification_multiple_selected_title">Physical keyboards configured</string>
+     <!-- Notification message when multiple keyboards with selected layouts have been connected the first time simultaneously [CHAR LIMIT=NOTIF_BODY] -->
+     <string name="keyboard_layout_notification_multiple_selected_message">Tap to view keyboards</string>
++
 +    <!-- Text shown for notifications from other users. -->
 +    <string name="notification_channel_other_users">Other users</string>
 +    <string name="notification_channel_other_users_description">Censored notifications from the lock screens of other users</string>
 +    <string name="other_users_notification_title">Notification from <xliff:g id="app_name" example="Messages">%1$s</xliff:g> for <xliff:g id="username" example="Alice">%2$s</xliff:g></string>
 +    <string name="other_users_notification_switch_user_action">Switch to <xliff:g id="username" example="Bob">%1$s</xliff:g></string>
-     <!-- Suffix added to a number to signify size in bytes. -->
-     <string name="byteShort">B</string>
-     <!-- Format string used to add a suffix like "B" to a number
+ </resources>
 diff --git a/core/res/res/values/symbols.xml b/core/res/res/values/symbols.xml
 index bee5799938f2..65da995cf93b 100644
 --- a/core/res/res/values/symbols.xml
@@ -108,18 +118,10 @@ index bee5799938f2..65da995cf93b 100644
  
    <java-symbol type="string" name="default_card_name"/>
 diff --git a/services/core/java/com/android/server/notification/NotificationManagerService.java b/services/core/java/com/android/server/notification/NotificationManagerService.java
-index d80ba269752f..d7a68bf348ed 100644
+index d80ba269752f..de6c66a6c080 100644
 --- a/services/core/java/com/android/server/notification/NotificationManagerService.java
 +++ b/services/core/java/com/android/server/notification/NotificationManagerService.java
-@@ -120,6 +120,7 @@ import static android.service.notification.NotificationListenerService.TRIM_FULL
- import static android.service.notification.NotificationListenerService.TRIM_LIGHT;
- import static android.view.WindowManager.LayoutParams.TYPE_TOAST;
- 
-+import static com.android.internal.widget.LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN;
- import static com.android.internal.config.sysui.SystemUiSystemPropertiesFlags.NotificationFlags.WAKE_LOCK_FOR_POSTING_NOTIFICATION;
- import static com.android.internal.util.FrameworkStatsLog.DND_MODE_RULE;
- import static com.android.internal.util.FrameworkStatsLog.PACKAGE_NOTIFICATION_CHANNEL_GROUP_PREFERENCES;
-@@ -472,6 +473,10 @@ public class NotificationManagerService extends SystemService {
+@@ -472,6 +472,10 @@ public class NotificationManagerService extends SystemService {
      private static final String SCHEME_TIMEOUT = "timeout";
      private static final String EXTRA_KEY = "key";
  
@@ -130,7 +132,7 @@ index d80ba269752f..d7a68bf348ed 100644
      private static final int NOTIFICATION_INSTANCE_ID_MAX = (1 << 13);
  
      // States for the review permissions notification
-@@ -1900,6 +1905,12 @@ public class NotificationManagerService extends SystemService {
+@@ -1900,6 +1904,12 @@ public class NotificationManagerService extends SystemService {
                  mAssistants.onUserRemoved(userId);
                  mHistoryManager.onUserRemoved(userId);
                  handleSavePolicyFile();
@@ -138,12 +140,12 @@ index d80ba269752f..d7a68bf348ed 100644
 +                // Clear censored notifications in case the removed user forwarded any.
 +                final int currentUserId = ActivityManager.getCurrentUser();
 +                cancelAllNotificationsInt(MY_UID, MY_PID, getContext().getPackageName(),
-+                        SystemNotificationChannels.OTHER_USERS, 0, 0, true, currentUserId,
-+                        REASON_USER_STOPPED, null);
++                        SystemNotificationChannels.OTHER_USERS, 0, 0, currentUserId,
++                        REASON_USER_STOPPED);
              } else if (action.equals(Intent.ACTION_USER_UNLOCKED)) {
                  final int userId = intent.getIntExtra(Intent.EXTRA_USER_HANDLE, USER_NULL);
                  mUserProfiles.updateCache(context);
-@@ -1909,6 +1920,36 @@ public class NotificationManagerService extends SystemService {
+@@ -1909,6 +1919,36 @@ public class NotificationManagerService extends SystemService {
                      mListeners.onUserUnlocked(userId);
                      mZenModeHelper.onUserUnlocked(userId);
                  }
@@ -153,8 +155,8 @@ index d80ba269752f..d7a68bf348ed 100644
 +                if (userId >= 0) {
 +                    // Clear censored notifications on switch.
 +                    cancelAllNotificationsInt(MY_UID, MY_PID, getContext().getPackageName(),
-+                            SystemNotificationChannels.OTHER_USERS, 0, 0, true, userId,
-+                            REASON_APP_CANCEL_ALL, null);
++                            SystemNotificationChannels.OTHER_USERS, 0, 0, userId,
++                            REASON_APP_CANCEL_ALL);
 +                }
 +            }
 +        }
@@ -180,7 +182,7 @@ index d80ba269752f..d7a68bf348ed 100644
              }
          }
      };
-@@ -2473,6 +2514,7 @@ public class NotificationManagerService extends SystemService {
+@@ -2473,6 +2513,7 @@ public class NotificationManagerService extends SystemService {
          filter.addAction(Intent.ACTION_USER_REMOVED);
          filter.addAction(Intent.ACTION_USER_UNLOCKED);
          filter.addAction(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE);
@@ -188,17 +190,17 @@ index d80ba269752f..d7a68bf348ed 100644
          getContext().registerReceiverAsUser(mIntentReceiver, UserHandle.ALL, filter, null, null);
  
          IntentFilter pkgFilter = new IntentFilter();
-@@ -2511,6 +2553,9 @@ public class NotificationManagerService extends SystemService {
-                 ReviewNotificationPermissionsReceiver.getFilter(),
-                 Context.RECEIVER_NOT_EXPORTED);
- 
+@@ -2520,6 +2561,9 @@ public class NotificationManagerService extends SystemService {
+                                 () -> handleNotificationPermissionChange(packageName, userId));
+                     }
+                 });
++
 +        IntentFilter switchUserFilter = new IntentFilter(ACTION_SWITCH_USER);
 +        getContext().registerReceiver(mSwitchUserReceiver, switchUserFilter);
-+
-         mAppOps.startWatchingMode(AppOpsManager.OP_POST_NOTIFICATION, null,
-                 new AppOpsManager.OnOpChangedInternalListener() {
-                     @Override
-@@ -8022,6 +8067,18 @@ public class NotificationManagerService extends SystemService {
+     }
+ 
+     /**
+@@ -8022,6 +8066,18 @@ public class NotificationManagerService extends SystemService {
                                  });
                              }
                          }
@@ -217,7 +219,7 @@ index d80ba269752f..d7a68bf348ed 100644
                      } else {
                          Slog.e(TAG, "Not posting notification without small icon: " + notification);
                          if (old != null && !old.isCanceled) {
-@@ -8080,6 +8137,354 @@ public class NotificationManagerService extends SystemService {
+@@ -8080,6 +8136,354 @@ public class NotificationManagerService extends SystemService {
          return group.getSbn().getInstanceId();
      }
  
@@ -364,7 +366,7 @@ index d80ba269752f..d7a68bf348ed 100644
 +
 +        // Handles lockdown button.
 +        final int strongAuthFlags = new LockPatternUtils(getContext()).getStrongAuthForUser(userId);
-+        if ((strongAuthFlags & STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN) != 0) {
++        if ((strongAuthFlags & LockPatternUtils.StrongAuthTracker.STRONG_AUTH_REQUIRED_AFTER_USER_LOCKDOWN) != 0) {
 +            if (DBG) Slog.d(TAG, "shouldShowNotificationOnKeyguardForUser: user in lockdown");
 +            return false;
 +        }
@@ -513,7 +515,7 @@ index d80ba269752f..d7a68bf348ed 100644
 +            final int currentUserId = ActivityManager.getCurrentUser();
 +            enqueueNotificationInternal(getContext().getPackageName(), getContext().getPackageName(),
 +                    MY_UID, MY_PID, createCensoredNotificationTag(originalUserId, pkg, originalTag),
-+                    notificationId, censoredNotification, currentUserId);
++                    notificationId, censoredNotification, currentUserId, false);
 +
 +            // Group the censored notifications per user.
 +            final Notification censoredNotificationSummary =
@@ -531,7 +533,7 @@ index d80ba269752f..d7a68bf348ed 100644
 +
 +            enqueueNotificationInternal(getContext().getPackageName(), getContext().getPackageName(),
 +                    MY_UID, MY_PID, createCensoredSummaryTag(originalUserId), notificationSummaryId,
-+                    censoredNotificationSummary, currentUserId);
++                    censoredNotificationSummary, currentUserId, false);
 +        }
 +
 +        /**
@@ -725,3 +727,6 @@ index 030c5507e8be..01ca59bf06d2 100644
      /**
       * @return a copy of the zen mode consolidated policy
       */
+-- 
+2.43.1
+
