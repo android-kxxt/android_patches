@@ -1,4 +1,4 @@
-From 60291d1751a5f48066a124d283eddf2b2df69cb4 Mon Sep 17 00:00:00 2001
+From 4e683c9e16f9b123df4e74299598d04dce064424 Mon Sep 17 00:00:00 2001
 From: June <june@eridan.me>
 Date: Sat, 19 Mar 2022 17:10:28 +0200
 Subject: [PATCH] Support forwarding notifications from other users
@@ -22,9 +22,9 @@ Co-authored-by: Pratyush <codelab@pratyush.dev>
  core/res/AndroidManifest.xml                  |   1 +
  core/res/res/values/strings.xml               |   5 +
  core/res/res/values/symbols.xml               |   6 +
- .../NotificationManagerService.java           | 404 ++++++++++++++++++
+ .../NotificationManagerService.java           | 412 +++++++++++++++++-
  .../server/notification/ZenModeHelper.java    | 128 ++++++
- 7 files changed, 563 insertions(+)
+ 7 files changed, 567 insertions(+), 4 deletions(-)
 
 diff --git a/core/java/android/provider/Settings.java b/core/java/android/provider/Settings.java
 index 64e39f5001f0..d9f9c91f059f 100644
@@ -120,7 +120,7 @@ index fd6158d02b8f..2fa33ddbd885 100644
  
    <java-symbol type="string" name="default_card_name"/>
 diff --git a/services/core/java/com/android/server/notification/NotificationManagerService.java b/services/core/java/com/android/server/notification/NotificationManagerService.java
-index fff8f3d2539a..e33a0fe59ab2 100755
+index fff8f3d2539a..af96d48237ac 100755
 --- a/services/core/java/com/android/server/notification/NotificationManagerService.java
 +++ b/services/core/java/com/android/server/notification/NotificationManagerService.java
 @@ -491,6 +491,10 @@ public class NotificationManagerService extends SystemService {
@@ -147,7 +147,7 @@ index fff8f3d2539a..e33a0fe59ab2 100755
              } else if (action.equals(Intent.ACTION_USER_UNLOCKED)) {
                  final int userId = intent.getIntExtra(Intent.EXTRA_USER_HANDLE, USER_NULL);
                  mUserProfiles.updateCache(context);
-@@ -2041,6 +2051,36 @@ public class NotificationManagerService extends SystemService {
+@@ -2041,16 +2051,46 @@ public class NotificationManagerService extends SystemService {
                      mListeners.onUserUnlocked(userId);
                      mZenModeHelper.onUserUnlocked(userId);
                  }
@@ -160,8 +160,8 @@ index fff8f3d2539a..e33a0fe59ab2 100755
 +                            SystemNotificationChannels.OTHER_USERS, 0, 0, userId,
 +                            REASON_APP_CANCEL_ALL);
 +                }
-+            }
-+        }
+             }
+         }
 +    };
 +
 +    private final BroadcastReceiver mSwitchUserReceiver = new BroadcastReceiver() {
@@ -170,7 +170,11 @@ index fff8f3d2539a..e33a0fe59ab2 100755
 +            if (!ACTION_SWITCH_USER.equals(intent.getAction())) {
 +                return;
 +            }
-+
+ 
+-        private boolean isProfileUnavailable(String action) {
+-            return allowPrivateProfile() ?
+-                    action.equals(Intent.ACTION_PROFILE_UNAVAILABLE) :
+-                    action.equals(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE);
 +            final boolean canSwitch = mUm.isUserSwitcherEnabled()
 +                    && mUm.getUserSwitchability() == UserManager.SWITCHABILITY_STATUS_OK;
 +
@@ -181,9 +185,19 @@ index fff8f3d2539a..e33a0fe59ab2 100755
 +                } catch (RemoteException re) {
 +                    // Do nothing
 +                }
-             }
++            }
          }
+     };
  
++    private boolean isProfileUnavailable(String action) {
++        return allowPrivateProfile() ?
++                action.equals(Intent.ACTION_PROFILE_UNAVAILABLE) :
++                action.equals(Intent.ACTION_MANAGED_PROFILE_UNAVAILABLE);
++    }
++
+     private final class SettingsObserver extends ContentObserver {
+         private final Uri NOTIFICATION_BADGING_URI
+                 = Settings.Secure.getUriFor(Settings.Secure.NOTIFICATION_BADGING);
 @@ -2637,6 +2677,7 @@ public class NotificationManagerService extends SystemService {
          if (allowPrivateProfile()){
              filter.addAction(Intent.ACTION_PROFILE_UNAVAILABLE);
