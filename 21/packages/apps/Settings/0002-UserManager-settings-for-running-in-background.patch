@@ -1,4 +1,4 @@
-From cc03d64662b1413363b0307b996f5173c201f8a5 Mon Sep 17 00:00:00 2001
+From 6dbca262d50df5cba951d976708ebe8496b71adf Mon Sep 17 00:00:00 2001
 From: quh4gko8 <88831734+quh4gko8@users.noreply.github.com>
 Date: Tue, 13 Jun 2023 12:19:41 +0000
 Subject: [PATCH 2/3] UserManager settings for running in background
@@ -9,9 +9,9 @@ Change-Id: I70c3897b0bc4f5c86fea8ba5447eb0131f1077f8
 ---
  res/values/strings_ext.xml                    |  5 ++
  res/xml/user_details_settings.xml             |  4 ++
- .../settings/users/UserDetailsSettings.java   | 14 ++++++
+ .../settings/users/UserDetailsSettings.java   | 15 ++++++
  .../settings/users/UserRestrictions.java      | 49 +++++++++++++++++++
- 4 files changed, 72 insertions(+)
+ 4 files changed, 73 insertions(+)
  create mode 100644 res/values/strings_ext.xml
  create mode 100644 src/com/android/settings/users/UserRestrictions.java
 
@@ -42,10 +42,18 @@ index 8e15d14bf5a..2c927060bf8 100644
              android:key="enable_calling"
              android:icon="@drawable/ic_phone"
 diff --git a/src/com/android/settings/users/UserDetailsSettings.java b/src/com/android/settings/users/UserDetailsSettings.java
-index a758e345325..827065152dc 100644
+index a758e345325..787bf09248a 100644
 --- a/src/com/android/settings/users/UserDetailsSettings.java
 +++ b/src/com/android/settings/users/UserDetailsSettings.java
-@@ -65,6 +65,7 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+@@ -32,6 +32,7 @@ import android.util.Log;
+ 
+ import androidx.annotation.VisibleForTesting;
+ import androidx.preference.Preference;
++import androidx.preference.SwitchPreferenceCompat;
+ import androidx.preference.TwoStatePreference;
+ 
+ import com.android.settings.R;
+@@ -65,6 +66,7 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
      private static final String KEY_GRANT_ADMIN = "user_grant_admin";
      private static final String KEY_APP_AND_CONTENT_ACCESS = "app_and_content_access";
      private static final String KEY_APP_COPYING = "app_copying";
@@ -53,11 +61,11 @@ index a758e345325..827065152dc 100644
  
      /** Integer extra containing the userId to manage */
      static final String EXTRA_USER_ID = "user_id";
-@@ -98,10 +99,13 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+@@ -98,10 +100,13 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
      Preference mRemoveUserPref;
      @VisibleForTesting
      TwoStatePreference mGrantAdminPref;
-+    private SwitchPreference mRunInBackgroundPref;
++    private SwitchPreferenceCompat mRunInBackgroundPref;
  
      @VisibleForTesting
      /** The user being studied (not the user doing the studying). */
@@ -67,7 +75,7 @@ index a758e345325..827065152dc 100644
  
      @Override
      public int getMetricsCategory() {
-@@ -197,6 +201,9 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+@@ -197,6 +202,9 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
                  showDialog(DIALOG_CONFIRM_GRANT_ADMIN);
              }
              return false;
@@ -77,7 +85,7 @@ index a758e345325..827065152dc 100644
          }
          return true;
      }
-@@ -340,6 +347,7 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+@@ -340,6 +348,7 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
          boolean isNewUser =
                  arguments.getBoolean(AppRestrictionsFragment.EXTRA_NEW_USER, false);
          mUserInfo = mUserManager.getUserInfo(userId);
@@ -85,7 +93,7 @@ index a758e345325..827065152dc 100644
  
          mSwitchUserPref = findPreference(KEY_SWITCH_USER);
          mPhonePref = findPreference(KEY_ENABLE_TELEPHONY);
-@@ -349,6 +357,7 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+@@ -349,6 +358,7 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
          mGrantAdminPref = findPreference(KEY_GRANT_ADMIN);
  
          mGrantAdminPref.setChecked(mUserInfo.isAdmin());
@@ -93,7 +101,7 @@ index a758e345325..827065152dc 100644
  
          mSwitchUserPref.setTitle(
                  context.getString(com.android.settingslib.R.string.user_switch_to_user,
-@@ -372,6 +381,7 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+@@ -372,6 +382,7 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
              removePreference(KEY_GRANT_ADMIN);
              removePreference(KEY_APP_AND_CONTENT_ACCESS);
              removePreference(KEY_APP_COPYING);
@@ -101,7 +109,7 @@ index a758e345325..827065152dc 100644
          } else {
              if (!Utils.isVoiceCapable(context)) { // no telephony
                  removePreference(KEY_ENABLE_TELEPHONY);
-@@ -401,11 +411,14 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+@@ -401,11 +412,14 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
                  if (!SHOW_APP_COPYING_PREF) {
                      removePreference(KEY_APP_COPYING);
                  }
@@ -116,7 +124,7 @@ index a758e345325..827065152dc 100644
              }
  
              // Remove preference KEY_REMOVE_USER if DISALLOW_REMOVE_USER restriction is set
-@@ -421,6 +434,7 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+@@ -421,6 +435,7 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
              mGrantAdminPref.setOnPreferenceChangeListener(this);
              mAppAndContentAccessPref.setOnPreferenceClickListener(this);
              mAppCopyingPref.setOnPreferenceClickListener(this);
