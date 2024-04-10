@@ -1,7 +1,7 @@
-From d3e2071691a328d4498a08bb40eb80dc15e10562 Mon Sep 17 00:00:00 2001
+From cc03d64662b1413363b0307b996f5173c201f8a5 Mon Sep 17 00:00:00 2001
 From: quh4gko8 <88831734+quh4gko8@users.noreply.github.com>
 Date: Tue, 13 Jun 2023 12:19:41 +0000
-Subject: [PATCH] UserManager settings for running in background
+Subject: [PATCH 2/3] UserManager settings for running in background
 
 Port to LOS20
 
@@ -27,22 +27,22 @@ index 00000000000..d3d5724f332
 +    <string name="user_run_in_background">Allow running in background</string>
 +</resources>
 diff --git a/res/xml/user_details_settings.xml b/res/xml/user_details_settings.xml
-index 068039cbd04..17a28b011cd 100644
+index 8e15d14bf5a..2c927060bf8 100644
 --- a/res/xml/user_details_settings.xml
 +++ b/res/xml/user_details_settings.xml
 @@ -25,6 +25,10 @@
              android:key="user_grant_admin"
              android:icon="@drawable/ic_admin_panel_settings"
              android:title="@string/user_grant_admin" />
-+    <SwitchPreference
++    <SwitchPreferenceCompat
 +            android:icon="@drawable/ic_sync"
 +            android:key="allow_run_in_background"
 +            android:title="@string/user_run_in_background" />
-     <SwitchPreference
+     <SwitchPreferenceCompat
              android:key="enable_calling"
              android:icon="@drawable/ic_phone"
 diff --git a/src/com/android/settings/users/UserDetailsSettings.java b/src/com/android/settings/users/UserDetailsSettings.java
-index 402d4b18dd4..0a279afa06b 100644
+index a758e345325..827065152dc 100644
 --- a/src/com/android/settings/users/UserDetailsSettings.java
 +++ b/src/com/android/settings/users/UserDetailsSettings.java
 @@ -65,6 +65,7 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
@@ -56,7 +56,7 @@ index 402d4b18dd4..0a279afa06b 100644
 @@ -98,10 +99,13 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
      Preference mRemoveUserPref;
      @VisibleForTesting
-     SwitchPreference mGrantAdminPref;
+     TwoStatePreference mGrantAdminPref;
 +    private SwitchPreference mRunInBackgroundPref;
  
      @VisibleForTesting
@@ -101,7 +101,7 @@ index 402d4b18dd4..0a279afa06b 100644
          } else {
              if (!Utils.isVoiceCapable(context)) { // no telephony
                  removePreference(KEY_ENABLE_TELEPHONY);
-@@ -399,11 +409,14 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+@@ -401,11 +411,14 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
                  if (!SHOW_APP_COPYING_PREF) {
                      removePreference(KEY_APP_COPYING);
                  }
@@ -116,7 +116,7 @@ index 402d4b18dd4..0a279afa06b 100644
              }
  
              // Remove preference KEY_REMOVE_USER if DISALLOW_REMOVE_USER restriction is set
-@@ -419,6 +432,7 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+@@ -421,6 +434,7 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
              mGrantAdminPref.setOnPreferenceChangeListener(this);
              mAppAndContentAccessPref.setOnPreferenceClickListener(this);
              mAppCopyingPref.setOnPreferenceClickListener(this);

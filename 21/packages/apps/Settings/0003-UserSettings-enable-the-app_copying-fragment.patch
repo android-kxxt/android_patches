@@ -1,7 +1,7 @@
-From c8a79c61c4a8bceab6ebda668f4cda40c629d013 Mon Sep 17 00:00:00 2001
+From e803291a01c3e6c79deae2e259c9ec4fec642f88 Mon Sep 17 00:00:00 2001
 From: kxxt <rsworktech@outlook.com>
 Date: Sun, 18 Feb 2024 21:36:07 +0800
-Subject: [PATCH] UserSettings: enable the app_copying fragment
+Subject: [PATCH 3/3] UserSettings: enable the app_copying fragment
 
 Change-Id: Ifed128a93314bf32afa976508130f98bf1a5baa1
 ---
@@ -9,7 +9,7 @@ Change-Id: Ifed128a93314bf32afa976508130f98bf1a5baa1
  1 file changed, 1 insertion(+), 2 deletions(-)
 
 diff --git a/src/com/android/settings/users/UserDetailsSettings.java b/src/com/android/settings/users/UserDetailsSettings.java
-index 0a279afa06b..3af5184988e 100644
+index 827065152dc..d51c6172e30 100644
 --- a/src/com/android/settings/users/UserDetailsSettings.java
 +++ b/src/com/android/settings/users/UserDetailsSettings.java
 @@ -79,7 +79,7 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
@@ -21,7 +21,7 @@ index 0a279afa06b..3af5184988e 100644
      private static final int MESSAGE_PADDING = 20;
  
      private UserManager mUserManager;
-@@ -414,7 +414,6 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
+@@ -416,7 +416,6 @@ public class UserDetailsSettings extends SettingsPreferenceFragment
                  mPhonePref.setChecked(!mUserManager.hasUserRestriction(
                          UserManager.DISALLOW_OUTGOING_CALLS, new UserHandle(userId)));
                  mRemoveUserPref.setTitle(R.string.user_remove_user);

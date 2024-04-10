@@ -1,7 +1,7 @@
-From 3662750289a5ad0e36c4b1b18f0e62d0c3dc22a3 Mon Sep 17 00:00:00 2001
+From 9aaac699234c2ad6d99085a292bdfe15a01cf09c Mon Sep 17 00:00:00 2001
 From: June <june@eridan.me>
 Date: Wed, 16 Mar 2022 07:09:46 +0200
-Subject: [PATCH] add a per-user setting for forwarding censored notifs
+Subject: [PATCH 1/3] add a per-user setting for forwarding censored notifs
 
 Change-Id: I38e4eb1f746a3dc9aeb5d4afdd5adc67194dae9d
 Signed-off-by: June <june@eridan.me>
@@ -16,16 +16,18 @@ Co-authored-by: June <june@eridan.me>
  create mode 100644 src/com/android/settings/users/SendCensoredNotificationsToCurrentUserPreferenceController.java
 
 diff --git a/res/values/strings.xml b/res/values/strings.xml
-index d44721cf4f2..d1cd1cf6876 100644
+index 8fcbcbf6b49..b9cad2b354f 100644
 --- a/res/values/strings.xml
 +++ b/res/values/strings.xml
-@@ -12310,4 +12310,6 @@
- 
-     <!-- Warning message when we try to dock an app not supporting multiple instances split into multiple sides [CHAR LIMIT=NONE] -->
-     <string name="dock_multi_instances_not_supported_text">"This app can only be opened in 1 window"</string>
+@@ -14,6 +14,8 @@
+      limitations under the License.
+ -->
+ <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
 +    <string name="user_settings_send_censored_notifications_to_current">Send notifications to current user</string>
 +    <string name="user_settings_send_censored_notifications_to_current_summary">Your lock screen notifications will be forwarded to the current user if you are active in the background. Only the user\'s name, the app\'s name, and the time received will be shown.</string>
- </resources>
+     <!-- Strings for Dialog yes button -->
+     <string name="yes">"Yes"</string>
+     <!-- Strings for Dialog no button -->
 diff --git a/res/xml/user_settings.xml b/res/xml/user_settings.xml
 index 59217226592..6c7ac2c091a 100644
 --- a/res/xml/user_settings.xml
@@ -108,7 +110,7 @@ index 00000000000..637d7bbb782
 +    }
 +}
 diff --git a/src/com/android/settings/users/UserSettings.java b/src/com/android/settings/users/UserSettings.java
-index b0816fdf4ad..4d5db7acc46 100644
+index 29d136fd9cc..8cc7e6bbcb3 100644
 --- a/src/com/android/settings/users/UserSettings.java
 +++ b/src/com/android/settings/users/UserSettings.java
 @@ -137,6 +137,8 @@ public class UserSettings extends SettingsPreferenceFragment
@@ -180,7 +182,7 @@ index b0816fdf4ad..4d5db7acc46 100644
          updateGuestPreferences();
          updateGuestCategory(context, users);
          updateAddUser(context);
-@@ -1744,6 +1762,8 @@ public class UserSettings extends SettingsPreferenceFragment
+@@ -1753,6 +1771,8 @@ public class UserSettings extends SettingsPreferenceFragment
                              new AddUserWhenLockedPreferenceController(
                                      context, KEY_ADD_USER_WHEN_LOCKED);
                      controller.updateNonIndexableKeys(niks);
@@ -190,5 +192,5 @@ index b0816fdf4ad..4d5db7acc46 100644
                              .updateNonIndexableKeys(niks);
                      new AutoSyncPersonalDataPreferenceController(context, null /* parent */)
 -- 
-2.43.1
+2.43.2
 
