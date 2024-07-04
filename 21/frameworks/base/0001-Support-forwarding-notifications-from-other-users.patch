@@ -1,4 +1,4 @@
-From e8bc111f237c51248468b458d1e48ab95e87ece8 Mon Sep 17 00:00:00 2001
+From 9ab6cddeb62d2115658a06ae2f06b7051458c382 Mon Sep 17 00:00:00 2001
 From: June <june@eridan.me>
 Date: Sat, 19 Mar 2022 17:10:28 +0200
 Subject: [PATCH] Support forwarding notifications from other users
@@ -591,7 +591,7 @@ index f75153ebccdc..7d4303a195d8 100755
       * If the notification differs enough visually, consider it a new interruptive notification.
       */
 diff --git a/services/core/java/com/android/server/notification/ZenModeHelper.java b/services/core/java/com/android/server/notification/ZenModeHelper.java
-index 6857869e3776..33b215b842f8 100644
+index 6857869e3776..44bc8819eb85 100644
 --- a/services/core/java/com/android/server/notification/ZenModeHelper.java
 +++ b/services/core/java/com/android/server/notification/ZenModeHelper.java
 @@ -34,12 +34,14 @@ import static android.service.notification.ZenModeConfig.UPDATE_ORIGIN_USER;
@@ -686,13 +686,13 @@ index 6857869e3776..33b215b842f8 100644
 +                // to avoid constructing a consolidated policy.
 +                return CensoredSendState.SEND_NORMAL;
 +            }
-+            applyCustomPolicy(zenPolicy, config.manualRule);
++            applyCustomPolicy(zenPolicy, config.manualRule, true);
 +        }
 +
 +        // This is apparently how automatic rules are parsed.
 +        for (ZenRule automaticRule : config.automaticRules.values()) {
 +            if (automaticRule.isAutomaticActive()) {
-+                applyCustomPolicy(zenPolicy, automaticRule);
++                applyCustomPolicy(zenPolicy, automaticRule, false);
 +                if (!isZenModeFromManualConfig
 +                        && zenSeverity(automaticRule.zenMode) > zenSeverity(zenMode)) {
 +                    zenMode = automaticRule.zenMode;
