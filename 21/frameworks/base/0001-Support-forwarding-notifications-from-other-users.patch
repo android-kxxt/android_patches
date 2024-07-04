@@ -1,4 +1,4 @@
-From 4e683c9e16f9b123df4e74299598d04dce064424 Mon Sep 17 00:00:00 2001
+From e8bc111f237c51248468b458d1e48ab95e87ece8 Mon Sep 17 00:00:00 2001
 From: June <june@eridan.me>
 Date: Sat, 19 Mar 2022 17:10:28 +0200
 Subject: [PATCH] Support forwarding notifications from other users
@@ -27,10 +27,10 @@ Co-authored-by: Pratyush <codelab@pratyush.dev>
  7 files changed, 567 insertions(+), 4 deletions(-)
 
 diff --git a/core/java/android/provider/Settings.java b/core/java/android/provider/Settings.java
-index 64e39f5001f0..d9f9c91f059f 100644
+index 783483d8e491..d08d2154c4f7 100644
 --- a/core/java/android/provider/Settings.java
 +++ b/core/java/android/provider/Settings.java
-@@ -10433,6 +10433,17 @@ public final class Settings {
+@@ -10631,6 +10631,17 @@ public final class Settings {
          public static final String LOCK_SCREEN_SHOW_ONLY_UNSEEN_NOTIFICATIONS =
                  "lock_screen_show_only_unseen_notifications";
  
@@ -75,11 +75,11 @@ index fef5e83cecca..6fab0091b971 100644
                  ACCESSIBILITY_MAGNIFICATION,
                  context.getString(R.string.notification_channel_accessibility_magnification),
 diff --git a/core/res/AndroidManifest.xml b/core/res/AndroidManifest.xml
-index 22591641cc66..a26ad7e161cf 100644
+index abe4b2942ca2..1755be9707c2 100644
 --- a/core/res/AndroidManifest.xml
 +++ b/core/res/AndroidManifest.xml
-@@ -580,6 +580,7 @@
- 
+@@ -581,6 +581,7 @@
+     <protected-broadcast android:name="android.app.action.KEYGUARD_PRIVATE_NOTIFICATIONS_CHANGED" />
      <protected-broadcast android:name="NotificationManagerService.TIMEOUT" />
      <protected-broadcast android:name="NotificationHistoryDatabase.CLEANUP" />
 +    <protected-broadcast android:name="NotificationManagerService.SWITCH_USER" />
@@ -87,7 +87,7 @@ index 22591641cc66..a26ad7e161cf 100644
      <protected-broadcast android:name="EventConditionProvider.EVALUATE" />
      <protected-broadcast android:name="SnoozeHelper.EVALUATE" />
 diff --git a/core/res/res/values/strings.xml b/core/res/res/values/strings.xml
-index 4596ca74bf8f..98996601d9b0 100644
+index 59066eb83f1c..122929e7cad6 100644
 --- a/core/res/res/values/strings.xml
 +++ b/core/res/res/values/strings.xml
 @@ -18,6 +18,11 @@
@@ -103,10 +103,10 @@ index 4596ca74bf8f..98996601d9b0 100644
      <string name="byteShort">B</string>
      <!-- Format string used to add a suffix like "B" to a number
 diff --git a/core/res/res/values/symbols.xml b/core/res/res/values/symbols.xml
-index fd6158d02b8f..2fa33ddbd885 100644
+index a1804672da73..c4ef330212fa 100644
 --- a/core/res/res/values/symbols.xml
 +++ b/core/res/res/values/symbols.xml
-@@ -5129,6 +5129,12 @@
+@@ -5174,6 +5174,12 @@
    <java-symbol type="id" name="language_picker_item" />
    <java-symbol type="id" name="language_picker_header" />
  
@@ -120,10 +120,10 @@ index fd6158d02b8f..2fa33ddbd885 100644
  
    <java-symbol type="string" name="default_card_name"/>
 diff --git a/services/core/java/com/android/server/notification/NotificationManagerService.java b/services/core/java/com/android/server/notification/NotificationManagerService.java
-index fff8f3d2539a..af96d48237ac 100755
+index f75153ebccdc..7d4303a195d8 100755
 --- a/services/core/java/com/android/server/notification/NotificationManagerService.java
 +++ b/services/core/java/com/android/server/notification/NotificationManagerService.java
-@@ -491,6 +491,10 @@ public class NotificationManagerService extends SystemService {
+@@ -516,6 +516,10 @@ public class NotificationManagerService extends SystemService {
      private static final String SCHEME_TIMEOUT = "timeout";
      private static final String EXTRA_KEY = "key";
  
@@ -134,7 +134,7 @@ index fff8f3d2539a..af96d48237ac 100755
      private static final int NOTIFICATION_INSTANCE_ID_MAX = (1 << 13);
  
      // States for the review permissions notification
-@@ -2032,6 +2036,12 @@ public class NotificationManagerService extends SystemService {
+@@ -2129,6 +2133,12 @@ public class NotificationManagerService extends SystemService {
                  mHistoryManager.onUserRemoved(userId);
                  mPreferencesHelper.syncChannelsBypassingDnd();
                  handleSavePolicyFile();
@@ -147,9 +147,9 @@ index fff8f3d2539a..af96d48237ac 100755
              } else if (action.equals(Intent.ACTION_USER_UNLOCKED)) {
                  final int userId = intent.getIntExtra(Intent.EXTRA_USER_HANDLE, USER_NULL);
                  mUserProfiles.updateCache(context);
-@@ -2041,16 +2051,46 @@ public class NotificationManagerService extends SystemService {
-                     mListeners.onUserUnlocked(userId);
-                     mZenModeHelper.onUserUnlocked(userId);
+@@ -2140,16 +2150,46 @@ public class NotificationManagerService extends SystemService {
+                         mZenModeHelper.onUserUnlocked(userId);
+                     }
                  }
 +            } else if (action.equals(Intent.ACTION_USER_BACKGROUND)) {
 +                // This is the user/profile that is going into the background.
@@ -198,7 +198,7 @@ index fff8f3d2539a..af96d48237ac 100755
      private final class SettingsObserver extends ContentObserver {
          private final Uri NOTIFICATION_BADGING_URI
                  = Settings.Secure.getUriFor(Settings.Secure.NOTIFICATION_BADGING);
-@@ -2637,6 +2677,7 @@ public class NotificationManagerService extends SystemService {
+@@ -2749,6 +2789,7 @@ public class NotificationManagerService extends SystemService {
          if (allowPrivateProfile()){
              filter.addAction(Intent.ACTION_PROFILE_UNAVAILABLE);
          }
@@ -206,7 +206,7 @@ index fff8f3d2539a..af96d48237ac 100755
          getContext().registerReceiverAsUser(mIntentReceiver, UserHandle.ALL, filter, null, null);
  
          IntentFilter pkgFilter = new IntentFilter();
-@@ -2684,6 +2725,9 @@ public class NotificationManagerService extends SystemService {
+@@ -2796,6 +2837,9 @@ public class NotificationManagerService extends SystemService {
                                  () -> handleNotificationPermissionChange(packageName, userId));
                      }
                  });
@@ -216,7 +216,7 @@ index fff8f3d2539a..af96d48237ac 100755
      }
  
      /**
-@@ -8509,6 +8553,18 @@ public class NotificationManagerService extends SystemService {
+@@ -8857,6 +8901,18 @@ public class NotificationManagerService extends SystemService {
                                  });
                              }
                          }
@@ -235,7 +235,7 @@ index fff8f3d2539a..af96d48237ac 100755
                      } else {
                          Slog.e(TAG, "Not posting notification without small icon: " + notification);
                          if (old != null && !old.isCanceled) {
-@@ -8567,6 +8623,354 @@ public class NotificationManagerService extends SystemService {
+@@ -8920,6 +8976,354 @@ public class NotificationManagerService extends SystemService {
          return group.getSbn().getInstanceId();
      }
  
@@ -591,13 +591,13 @@ index fff8f3d2539a..af96d48237ac 100755
       * If the notification differs enough visually, consider it a new interruptive notification.
       */
 diff --git a/services/core/java/com/android/server/notification/ZenModeHelper.java b/services/core/java/com/android/server/notification/ZenModeHelper.java
-index 3f8b5952a1bc..99a921885150 100644
+index 6857869e3776..33b215b842f8 100644
 --- a/services/core/java/com/android/server/notification/ZenModeHelper.java
 +++ b/services/core/java/com/android/server/notification/ZenModeHelper.java
-@@ -32,12 +32,14 @@ import static android.service.notification.ZenModeConfig.UPDATE_ORIGIN_SYSTEM_OR
- import static android.service.notification.ZenModeConfig.UPDATE_ORIGIN_USER;
+@@ -34,12 +34,14 @@ import static android.service.notification.ZenModeConfig.UPDATE_ORIGIN_USER;
  
  import static com.android.internal.util.FrameworkStatsLog.DND_MODE_RULE;
+ import static com.android.internal.util.Preconditions.checkArgument;
 +import static com.android.server.notification.NotificationManagerService.CensoredSendState;
  
  import android.annotation.DrawableRes;
@@ -609,7 +609,7 @@ index 3f8b5952a1bc..99a921885150 100644
  import android.app.AppOpsManager;
  import android.app.AutomaticZenRule;
  import android.app.Flags;
-@@ -250,6 +252,115 @@ public class ZenModeHelper {
+@@ -267,6 +269,115 @@ public class ZenModeHelper {
          }
      }
  
@@ -725,7 +725,7 @@ index 3f8b5952a1bc..99a921885150 100644
      public void addCallback(Callback callback) {
          mCallbacks.add(callback);
      }
-@@ -1265,6 +1376,23 @@ public class ZenModeHelper {
+@@ -1694,6 +1805,23 @@ public class ZenModeHelper {
          }
      }
  
@@ -750,5 +750,5 @@ index 3f8b5952a1bc..99a921885150 100644
       * @return a copy of the zen mode consolidated policy
       */
 -- 
-2.43.2
+2.45.2
 
