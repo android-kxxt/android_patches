@@ -1,4 +1,4 @@
-From b8a8802e12663490b5e9591693bf8435178532df Mon Sep 17 00:00:00 2001
+From a1ce914598424460b13341eecd09b2600dda3a71 Mon Sep 17 00:00:00 2001
 From: Vala Zadeh <quic_vzadeh@quicinc.com>
 Date: Wed, 18 May 2022 16:57:43 -0700
 Subject: [PATCH] Add 5G Ultra Wideband icon carrier config keys
@@ -6,16 +6,16 @@ Subject: [PATCH] Add 5G Ultra Wideband icon carrier config keys
 Change-Id: Idc6da92fb41a780d01c961d676f61ae4b91d2a7b
 CRs-Fixed: 3218447
 ---
- .../telephony/CarrierConfigManager.java       | 84 +++++++++++++++++++
- 1 file changed, 84 insertions(+)
+ .../telephony/CarrierConfigManager.java       | 88 +++++++++++++++++++
+ 1 file changed, 88 insertions(+)
 
 diff --git a/telephony/java/android/telephony/CarrierConfigManager.java b/telephony/java/android/telephony/CarrierConfigManager.java
-index 3d46c33534af..8622dc7bc429 100644
+index 5d99acd87dd3..0c28f3b3f4d8 100644
 --- a/telephony/java/android/telephony/CarrierConfigManager.java
 +++ b/telephony/java/android/telephony/CarrierConfigManager.java
-@@ -9809,6 +9809,81 @@ public class CarrierConfigManager {
-     public static final String KEY_AUTO_DATA_SWITCH_RAT_SIGNAL_SCORE_BUNDLE =
-             "auto_data_switch_rat_signal_score_string_bundle";
+@@ -10245,6 +10245,81 @@ public class CarrierConfigManager {
+     public static final String KEY_CELLULAR_SERVICE_CAPABILITIES_INT_ARRAY =
+             "cellular_service_capabilities_int_array";
  
 +    /**
 +     * Determines the SIB2 value for showing the 5G Ultra Wideband icon.
@@ -95,10 +95,14 @@ index 3d46c33534af..8622dc7bc429 100644
      /** The default value for every variable. */
      private static final PersistableBundle sDefaults;
  
-@@ -10419,6 +10494,15 @@ public class CarrierConfigManager {
-                 "enterprise:0", "default:1", "mms:2", "supl:2", "dun:2", "hipri:3", "fota:2",
-                 "ims:2", "cbs:2", "ia:2", "emergency:2", "mcx:3", "xcap:3"
-         });
+@@ -10879,6 +10954,19 @@ public class CarrierConfigManager {
+                 TimeUnit.DAYS.toMillis(1));
+         sDefaults.putStringArray(KEY_MISSED_INCOMING_CALL_SMS_ORIGINATOR_STRING_ARRAY,
+                 new String[0]);
++        sDefaults.putStringArray(KEY_APN_PRIORITY_STRING_ARRAY, new String[] {
++                "enterprise:0", "default:1", "mms:2", "supl:2", "dun:2", "hipri:3", "fota:2",
++                "ims:2", "cbs:2", "ia:2", "emergency:2", "mcx:3", "xcap:3"
++        });
 +        sDefaults.putInt(KEY_NR_ULTRA_WIDEBAND_ICON_SIB2_VALUE, Integer.MAX_VALUE);
 +        sDefaults.putInt(KEY_NR_ULTRA_WIDEBAND_ICON_MIN_BANDWIDTH_VALUE, Integer.MAX_VALUE);
 +        sDefaults.putInt(KEY_NR_ULTRA_WIDEBAND_ICON_MIN_BANDWIDTH_MODE, Integer.MAX_VALUE);
@@ -112,5 +116,5 @@ index 3d46c33534af..8622dc7bc429 100644
          // Do not modify the priority unless you know what you are doing. This will have significant
          // impacts on the order of data network setup.
 -- 
-2.43.2
+2.45.2
 
