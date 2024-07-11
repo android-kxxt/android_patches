@@ -37,8 +37,5 @@ changes=(
 )
 repopick -P vendor/lineage ${changes[@]}&
 
-
-repopick -P frameworks/base -f -t 21-snet
-
 wait
 
