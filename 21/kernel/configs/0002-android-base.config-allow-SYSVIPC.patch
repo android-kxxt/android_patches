@@ -1,4 +1,4 @@
-From 399528a2ea7d8217a37e2362a2e0210be25a9f35 Mon Sep 17 00:00:00 2001
+From b6f04dea0c13e396c20dd373e1cf9c55714f5346 Mon Sep 17 00:00:00 2001
 From: Levi Zim <rsworktech@outlook.com>
 Date: Tue, 9 Jan 2024 19:25:27 +0800
 Subject: [PATCH] android-base.config: allow SYSVIPC
@@ -10,6 +10,7 @@ Change-Id: Idd8605129d30f78f9dd8df841d3b989e3cd97f4c
  r/android-4.14/android-base.config | 1 -
  r/android-5.4/android-base.config  | 1 -
  s/android-4.19/android-base.config | 1 -
+ s/android-5.10/android-base.config | 1 -
  s/android-5.4/android-base.config  | 1 -
  t/android-5.10/android-base.config | 1 -
  t/android-5.15/android-base.config | 1 -
@@ -18,7 +19,7 @@ Change-Id: Idd8605129d30f78f9dd8df841d3b989e3cd97f4c
  v/android-6.1/android-base.config  | 1 -
  v/android-6.6/android-base.config  | 1 -
  w/android-6.1/android-base.config  | 1 -
- 13 files changed, 13 deletions(-)
+ 14 files changed, 14 deletions(-)
 
 diff --git a/p/android-4.4/android-base.config b/p/android-4.4/android-base.config
 index 25dd174..8d76d0f 100644
@@ -80,6 +81,18 @@ index d2bb2ad..705be31 100644
  # CONFIG_USELIB is not set
  # CONFIG_VHOST is not set
  CONFIG_ADVISE_SYSCALLS=y
+diff --git a/s/android-5.10/android-base.config b/s/android-5.10/android-base.config
+index d6e1f5a..78fbcd9 100644
+--- a/s/android-5.10/android-base.config
++++ b/s/android-5.10/android-base.config
+@@ -11,7 +11,6 @@
+ # CONFIG_NFS_FS is not set
+ # CONFIG_PM_AUTOSLEEP is not set
+ # CONFIG_RT_GROUP_SCHED is not set
+-# CONFIG_SYSVIPC is not set
+ # CONFIG_USELIB is not set
+ CONFIG_ADVISE_SYSCALLS=y
+ CONFIG_AIO=y
 diff --git a/s/android-5.4/android-base.config b/s/android-5.4/android-base.config
 index d6e1f5a..78fbcd9 100644
 --- a/s/android-5.4/android-base.config
