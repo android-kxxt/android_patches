@@ -1,4 +1,4 @@
-From fd64fdd437a7259108f1de65ba50fc9ca87a99b8 Mon Sep 17 00:00:00 2001
+From a2364d6afe3f3eb8b10a50cdda97c3770acb1100 Mon Sep 17 00:00:00 2001
 From: flawedworld <flawedworld@flawed.world>
 Date: Fri, 15 Oct 2021 17:07:13 +0100
 Subject: [PATCH] enable secondary user logout support by default
@@ -12,15 +12,15 @@ fix DevicePolicyManager#logoutUser() never succeeding
 To succeed, userId to switch to needs to be set with setLogoutUserIdLocked(), but this is not done
 in both callers of this method (both of which are "End session" buttons), making them no-ops.
 ---
- .../com/android/server/devicepolicy/ActiveAdmin.java   |  2 +-
- .../devicepolicy/DevicePolicyManagerService.java       | 10 ++++++++--
- 2 files changed, 9 insertions(+), 3 deletions(-)
+ .../java/com/android/server/devicepolicy/ActiveAdmin.java | 2 +-
+ .../server/devicepolicy/DevicePolicyManagerService.java   | 8 +++++++-
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
 diff --git a/services/devicepolicy/java/com/android/server/devicepolicy/ActiveAdmin.java b/services/devicepolicy/java/com/android/server/devicepolicy/ActiveAdmin.java
-index 0c69067ab131..ef3213b68bfe 100644
+index dc8cec91001b..2ae616fc9cc5 100644
 --- a/services/devicepolicy/java/com/android/server/devicepolicy/ActiveAdmin.java
 +++ b/services/devicepolicy/java/com/android/server/devicepolicy/ActiveAdmin.java
-@@ -214,7 +214,7 @@ class ActiveAdmin {
+@@ -233,7 +233,7 @@ class ActiveAdmin {
      boolean requireAutoTime = false;
      boolean forceEphemeralUsers = false;
      boolean isNetworkLoggingEnabled = false;
@@ -30,10 +30,10 @@ index 0c69067ab131..ef3213b68bfe 100644
      // one notification after enabling + one more after reboots
      static final int DEF_MAXIMUM_NETWORK_LOGGING_NOTIFICATIONS_SHOWN = 2;
 diff --git a/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java b/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java
-index 313c4242f25e..76dabbb24868 100644
+index 3d9522ee9733..a3fbd93bf5ff 100644
 --- a/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java
 +++ b/services/devicepolicy/java/com/android/server/devicepolicy/DevicePolicyManagerService.java
-@@ -11182,6 +11182,12 @@ public class DevicePolicyManagerService extends BaseIDevicePolicyManager {
+@@ -12759,6 +12759,12 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
          Preconditions.checkCallAuthorization(canManageUsers(caller)
                  || hasCallingOrSelfPermission(permission.INTERACT_ACROSS_USERS));
  
@@ -46,7 +46,7 @@ index 313c4242f25e..76dabbb24868 100644
          int currentUserId = getCurrentForegroundUserId();
          if (VERBOSE_LOG) {
              Slogf.v(LOG_TAG, "logout() called by uid %d; current user is %d", caller.getUid(),
-@@ -16122,11 +16128,11 @@ public class DevicePolicyManagerService extends BaseIDevicePolicyManager {
+@@ -19223,7 +19229,7 @@ public class DevicePolicyManagerService extends IDevicePolicyManager.Stub {
      @Override
      public boolean isLogoutEnabled() {
          if (!mHasFeature) {
@@ -55,11 +55,6 @@ index 313c4242f25e..76dabbb24868 100644
          }
          synchronized (getLockObject()) {
              ActiveAdmin deviceOwner = getDeviceOwnerAdminLocked();
--            return (deviceOwner != null) && deviceOwner.isLogoutEnabled;
-+            return (deviceOwner == null) || deviceOwner.isLogoutEnabled;
-         }
-     }
- 
 -- 
-2.43.1
+2.45.2
 
