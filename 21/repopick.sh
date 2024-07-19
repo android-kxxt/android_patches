@@ -2,7 +2,11 @@
 set -e
 
 source "build/envsetup.sh";
-source "vendor/lineage/build/envsetup.sh";
+source "vendor/calyx/build/envsetup.sh";
+
+repopick_args=(
+  -g https://review.lineageos.org/
+)
 
 # hardware/xiaomi
 changes=(
@@ -22,20 +26,20 @@ changes=(
 392965 # vibrator: effect: Create double click effect from click if necessary
 392966 # vibrator: effect: Fallback to click if an effect is missing
 )
-repopick -P hardware/xiaomi ${changes[@]}&
+repopick ${repopick_args[@]} -P hardware/xiaomi ${changes[@]}&
 
 # frameworks/base
 changes=(
 386158 # Add 5G Ultra Wideband icon carrier config keys
 386159 # Fix default values for 5G Ultra Wideband icon carrier config keys
 )
-repopick -P frameworks/base ${changes[@]}&
+repopick ${repopick_args[@]} -P frameworks/base ${changes[@]}&
 
 # vendor/lineage
 changes=(
 367044 # android: merge_dtbs: Respect miboard-id while merging
 )
-repopick -P vendor/lineage ${changes[@]}&
+repopick ${repopick_args[@]} -P vendor/calyx ${changes[@]}&
 
 wait
 
