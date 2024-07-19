@@ -1,0 +1,54 @@
+From e353ada752ea2651543da85175604512d75ef017 Mon Sep 17 00:00:00 2001
+From: Michael Bestas <mkbestas@gmail.com>
+Date: Thu, 11 Nov 2021 01:53:44 +0200
+Subject: [PATCH] Add preference key for device reboot timeout, global
+
+Co-authored-by: Chirayu Desai <chirayudesai1@gmail.com>
+Change-Id: I1858b303f2e9ea7d5f6418e3d94db74e65632044
+---
+ .../lineageos/providers/LineageSettings.java  | 22 +++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+diff --git a/sdk/src/java/lineageos/providers/LineageSettings.java b/sdk/src/java/lineageos/providers/LineageSettings.java
+index 62092f15..d4c42c1f 100644
+--- a/sdk/src/java/lineageos/providers/LineageSettings.java
++++ b/sdk/src/java/lineageos/providers/LineageSettings.java
+@@ -3423,6 +3423,27 @@ public final class LineageSettings {
+         public static final Validator __MAGICAL_TEST_PASSING_ENABLER_VALIDATOR =
+                 sAlwaysTrueValidator;
+ 
++        /**
++         * The amount of time in milliseconds before the device automatically reboots
++         * @hide
++         */
++        public static final String DEVICE_REBOOT_TIMEOUT = "device_reboot_timeout";
++
++        /** @hide */
++        public static final Validator DEVICE_REBOOT_TIMEOUT_VALIDATOR =
++                new DiscreteValueValidator(new String[] {
++                        "0",
++                        "3600000",
++                        "7200000",
++                        "14400000",
++                        "28800000",
++                        "43200000",
++                        "86400000",
++                        "129600000",
++                        "172800000",
++                        "259200000"
++                });
++
+         /**
+          * Mapping of validators for all global settings.  This map is used to validate both valid
+          * keys as well as validating the values for those keys.
+@@ -3436,6 +3457,7 @@ public final class LineageSettings {
+                 new ArrayMap<String, Validator>();
+         static {
+             VALIDATORS.put(TRUST_RESTRICT_USB, TRUST_RESTRICT_USB_VALIDATOR);
++            VALIDATORS.put(DEVICE_REBOOT_TIMEOUT, DEVICE_REBOOT_TIMEOUT_VALIDATOR);
+             VALIDATORS.put(__MAGICAL_TEST_PASSING_ENABLER,
+                     __MAGICAL_TEST_PASSING_ENABLER_VALIDATOR);
+         };
+-- 
+2.45.2
+
