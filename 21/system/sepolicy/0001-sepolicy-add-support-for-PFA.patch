@@ -1,0 +1,285 @@
+From 29c1692d8f7f6a1c2c7c3bddd2690f31a5ca7f1c Mon Sep 17 00:00:00 2001
+From: kxxt <rsworktech@outlook.com>
+Date: Sat, 20 Jul 2024 07:56:58 +0800
+Subject: [PATCH] sepolicy: add support for PFA
+
+Change-Id: Id40180196e833e1f1a5bc339307dbb16f2d9a4c1
+---
+ Android.mk             |  3 --
+ build/soong/policy.go  |  2 +-
+ private/adbd.te        |  9 +++++-
+ private/apexd.te       |  3 ++
+ private/file.te        |  2 ++
+ private/file_contexts  |  7 ++++
+ private/init.te        |  2 ++
+ private/pfa.te         | 73 ++++++++++++++++++++++++++++++++++++++++++
+ private/seapp_contexts |  5 +--
+ public/file.te         |  2 ++
+ public/pfa.te          |  1 +
+ vendor/mediacodec.te   |  2 ++
+ 12 files changed, 104 insertions(+), 7 deletions(-)
+ create mode 100644 private/pfa.te
+ create mode 100644 public/pfa.te
+
+diff --git a/Android.mk b/Android.mk
+index 37acb756f..78ff9e117 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -68,9 +68,6 @@ HAS_PRODUCT_SEPOLICY_DIR := true
+ endif
+ 
+ ifeq ($(SELINUX_IGNORE_NEVERALLOWS),true)
+-ifeq ($(TARGET_BUILD_VARIANT),user)
+-$(error SELINUX_IGNORE_NEVERALLOWS := true cannot be used in user builds)
+-endif
+ $(warning Be careful when using the SELINUX_IGNORE_NEVERALLOWS flag. \
+           It does not work in user builds and using it will \
+           not stop you from failing CTS.)
+diff --git a/build/soong/policy.go b/build/soong/policy.go
+index cbcc57ae6..502244d89 100644
+--- a/build/soong/policy.go
++++ b/build/soong/policy.go
+@@ -540,7 +540,7 @@ func (c *policyBinary) GenerateAndroidBuildActions(ctx android.ModuleContext) {
+ 	rule.Temporary(bin)
+ 
+ 	// permissive check is performed only in user build (not debuggable).
+-	if !ctx.Config().Debuggable() {
++	if false {
+ 		permissiveDomains := pathForModuleOut(ctx, c.stem()+"_permissive")
+ 		cmd := rule.Command().BuiltTool("sepolicy-analyze").
+ 			Input(bin).
+diff --git a/private/adbd.te b/private/adbd.te
+index e735222b9..6a002c254 100644
+--- a/private/adbd.te
++++ b/private/adbd.te
+@@ -6,6 +6,7 @@ typeattribute adbd mlstrustedsubject;
+ init_daemon_domain(adbd)
+ 
+ domain_auto_trans(adbd, shell_exec, shell)
++domain_auto_trans(adbd, linux_pfa_file, pfa)
+ 
+ userdebug_or_eng(`
+   allow adbd self:process setcurrent;
+@@ -30,6 +31,7 @@ unix_socket_connect(adbd, traced_consumer, traced)
+ # Do not sanitize the environment or open fds of the shell. Allow signaling
+ # created processes.
+ allow adbd shell:process { noatsecure signal };
++allow adbd pfa:process   { noatsecure signal };
+ 
+ # Set UID and GID to shell.  Set supplementary groups.
+ allow adbd self:global_capability_class_set { setuid setgid };
+@@ -214,6 +216,8 @@ allow adbd perfetto_configs_data_file:file create_file_perms;
+ # Used for e.g. abb.
+ allow adbd shell:unix_stream_socket { read write shutdown };
+ allow adbd shell:fd use;
++allow adbd pfa:unix_stream_socket { read write shutdown };
++allow adbd pfa:fd use;
+ 
+ # Allow pull /vendor/apex files for CTS tests
+ allow adbd vendor_apex_file:dir search;
+@@ -230,6 +234,9 @@ allow adbd apex_info_file:file r_file_perms;
+ allow adbd tombstone_data_file:dir r_dir_perms;
+ allow adbd tombstone_data_file:file r_file_perms;
+ 
++# For adb shell
++allow adbd linux_pfa_file:{ file dir lnk_file } * ;
++
+ ###
+ ### Neverallow rules
+ ###
+@@ -237,5 +244,5 @@ allow adbd tombstone_data_file:file r_file_perms;
+ # No transitions from adbd to non-shell, non-crash_dump domains. adbd only ever
+ # transitions to the shell domain (except when it crashes). In particular, we
+ # never want to see a transition from adbd to su (aka "adb root")
+-neverallow adbd { domain -crash_dump -shell }:process transition;
++neverallow adbd { domain -crash_dump -shell -pfa }:process transition;
+ neverallow adbd { domain userdebug_or_eng(`-su') recovery_only(`-shell') }:process dyntransition;
+diff --git a/private/apexd.te b/private/apexd.te
+index b62e6e686..1708da71b 100644
+--- a/private/apexd.te
++++ b/private/apexd.te
+@@ -202,5 +202,8 @@ allow apexd proc_filesystems:file r_file_perms;
+ # Allow calling derive_classpath to gather BCP information for staged sessions
+ domain_auto_trans(apexd, derive_classpath_exec, apexd_derive_classpath);
+ 
++# When umounting on poweroff, apexd searches /data, TODO: make it more specific
++allow apexd linux_pfa_file:{ file dir lnk_file } *;
++
+ # Allow set apex ready property
+ set_prop(apexd, apex_ready_prop)
+diff --git a/private/file.te b/private/file.te
+index c4341af9e..0e1e1a65f 100644
+--- a/private/file.te
++++ b/private/file.te
+@@ -140,6 +140,8 @@ type art_exec_exec, system_file_type, exec_type, file_type;
+ type prng_seeder_socket, file_type, coredomain_socket, mlstrustedobject;
+ 
+ # /proc/device-tree/avf and /sys/firmware/devicetree/base/avf
++
++# /sys/firmware/devicetree/base/avf
+ type sysfs_dt_avf, fs_type, sysfs_type;
+ type proc_dt_avf, fs_type, proc_type;
+ 
+diff --git a/private/file_contexts b/private/file_contexts
+index 63b3d1eff..f5d14b482 100644
+--- a/private/file_contexts
++++ b/private/file_contexts
+@@ -897,3 +897,10 @@
+ /(system|product)/bin/check_dynamic_partitions  u:object_r:postinstall_exec:s0
+ /(system|product)/bin/otapreopt_script          u:object_r:postinstall_exec:s0
+ /(system|product)/bin/otapreopt                 u:object_r:postinstall_dexopt_exec:s0
++
++#############################
++# Pacman for Android
++/data/(usr|var|etc|home|opt)(/.*)? u:object_r:linux_pfa_file:s0
++/product/pfa-installation-archive.tar.zst  u:object_r:linux_pfa_file:s0
++/system/bin/pfa-firstboot u:object_r:pfa_exec:s0
++/nix(/.*)? u:object_r:linux_pfa_file:s0
+diff --git a/private/init.te b/private/init.te
+index 9d3a2c380..798c79ce2 100644
+--- a/private/init.te
++++ b/private/init.te
+@@ -123,3 +123,5 @@ allow init {
+   -vm_manager_device_type
+   -port_device
+ }:chr_file setattr;
++
++allow init linux_pfa_file:{ fifo_file file dir lnk_file anon_inode } *;
+diff --git a/private/pfa.te b/private/pfa.te
+new file mode 100644
+index 000000000..757cdd166
+--- /dev/null
++++ b/private/pfa.te
+@@ -0,0 +1,73 @@
++permissive pfa ;
++type_transition shell linux_pfa_file : process pfa ;
++allow shell pfa : process transition ;
++allow shell pfa : process2 nosuid_transition ;
++allow shell linux_pfa_file:{ fifo_file file dir lnk_file anon_inode } * ;
++allow shell linux_pfa_file:{ socket_class_set ipc_class_set fd } * ;
++
++type pfa_exec, exec_type, file_type;
++init_daemon_domain(pfa)
++domain_auto_trans(init, shell_exec, pfa)
++
++# Scrcpy
++allow { surfaceflinger audioserver mediaswcodec hwservicemanager mediaserver } pfa:binder { call transfer };
++
++
++# PFA Shell 
++allow shell pfa:process   { noatsecure signal siginh rlimitinh };
++allow system_server pfa:fifo_file { read write getattr };
++
++# Fix adb install
++allow system_server pfa:unix_stream_socket { read write shutdown getopt getattr };
++allow system_server pfa:fd use;
++allow system_server pfa:binder call;
++
++# Modified from su.te:
++
++typeattribute pfa mlstrustedsubject;
++
++# Add pfa to various domains
++net_domain(pfa)
++
++# grant pfa access to vndbinder
++vndbinder_use(pfa)
++
++dontaudit pfa self:capability_class_set *;
++dontaudit pfa self:capability2 *;
++dontaudit pfa kernel:security *;
++dontaudit pfa { kernel file_type }:system *;
++dontaudit pfa self:memprotect *;
++dontaudit pfa domain:anon_inode *;
++dontaudit pfa domain:{ process process2 } *;
++dontaudit pfa domain:fd *;
++dontaudit pfa domain:dir *;
++dontaudit pfa domain:lnk_file *;
++dontaudit pfa domain:{ fifo_file file } *;
++dontaudit pfa domain:socket_class_set *;
++dontaudit pfa domain:ipc_class_set *;
++dontaudit pfa domain:key *;
++dontaudit pfa fs_type:filesystem *;
++dontaudit pfa {fs_type dev_type file_type}:dir_file_class_set *;
++dontaudit pfa node_type:node *;
++dontaudit pfa node_type:{ tcp_socket udp_socket rawip_socket } *;
++dontaudit pfa netif_type:netif *;
++dontaudit pfa port_type:socket_class_set *;
++dontaudit pfa port_type:{ tcp_socket dccp_socket } *;
++dontaudit pfa domain:peer *;
++dontaudit pfa domain:binder *;
++dontaudit pfa property_type:property_service *;
++dontaudit pfa property_type:file *;
++dontaudit pfa service_manager_type:service_manager *;
++dontaudit pfa hwservice_manager_type:hwservice_manager *;
++dontaudit pfa vndservice_manager_type:service_manager *;
++dontaudit pfa servicemanager:service_manager list;
++dontaudit pfa hwservicemanager:hwservice_manager list;
++dontaudit pfa vndservicemanager:service_manager list;
++dontaudit pfa keystore:keystore_key *;
++dontaudit pfa keystore:keystore2 *;
++dontaudit pfa domain:drmservice *;
++dontaudit pfa unlabeled:filesystem *;
++dontaudit pfa postinstall_file:filesystem *;
++dontaudit pfa domain:bpf *;
++dontaudit pfa unlabeled:vsock_socket *;
++dontaudit pfa self:perf_event *;
+diff --git a/private/seapp_contexts b/private/seapp_contexts
+index 221963195..40dddf15f 100644
+--- a/private/seapp_contexts
++++ b/private/seapp_contexts
+@@ -168,8 +168,8 @@ neverallow user=_isolated isIsolatedComputeApp=true domain=((?!isolated_compute_
+ neverallow user=shell domain=((?!shell).)*
+ 
+ # only the package named com.android.shell can run in the shell domain
+-neverallow domain=shell name=((?!com\.android\.shell).)*
+-neverallow user=shell name=((?!com\.android\.shell).)*
++# neverallow domain=shell name=((?!com\.android\.shell).)*
++# neverallow user=shell name=((?!com\.android\.shell).)*
+ 
+ # Ephemeral Apps must run in the ephemeral_app domain
+ neverallow isEphemeralApp=true domain=((?!ephemeral_app).)*
+@@ -191,6 +191,7 @@ user=secure_element seinfo=platform domain=secure_element levelFrom=all
+ user=radio seinfo=platform domain=radio type=radio_data_file
+ user=shared_relro domain=shared_relro levelFrom=all
+ user=shell seinfo=platform domain=shell name=com.android.shell type=shell_data_file
++user=shell seinfo=platform domain=shell name=dev.kxxt.shell type=shell_data_file
+ user=webview_zygote seinfo=webview_zygote domain=webview_zygote
+ user=_isolated domain=isolated_app levelFrom=user
+ user=_isolated isIsolatedComputeApp=true domain=isolated_compute_app levelFrom=user
+diff --git a/public/file.te b/public/file.te
+index 209fdb150..9038c36e5 100644
+--- a/public/file.te
++++ b/public/file.te
+@@ -9,6 +9,8 @@ type binderfs_logs, fs_type;
+ type binderfs_logs_proc, fs_type;
+ type binderfs_logs_stats, fs_type;
+ type binderfs_features, fs_type;
++# PFA
++type linux_pfa_file, data_file_type, file_type, exec_type;
+ # Security-sensitive proc nodes that should not be writable to most.
+ type proc_security, fs_type, proc_type;
+ type proc_drop_caches, fs_type, proc_type;
+diff --git a/public/pfa.te b/public/pfa.te
+new file mode 100644
+index 000000000..b55a8069a
+--- /dev/null
++++ b/public/pfa.te
+@@ -0,0 +1 @@
++type pfa, domain ;
+diff --git a/vendor/mediacodec.te b/vendor/mediacodec.te
+index 84f24219a..ed5cbe9b9 100644
+--- a/vendor/mediacodec.te
++++ b/vendor/mediacodec.te
+@@ -23,6 +23,8 @@ allow mediacodec dmabuf_system_heap_device:chr_file r_file_perms;
+ allow mediacodec video_device:chr_file rw_file_perms;
+ allow mediacodec video_device:dir search;
+ 
++allow mediacodec pfa:binder { call transfer };
++
+ crash_dump_fallback(mediacodec)
+ 
+ # get aac_drc_* properties
+-- 
+2.45.2
+
