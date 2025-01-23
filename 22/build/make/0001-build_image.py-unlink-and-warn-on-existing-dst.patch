@@ -1,0 +1,27 @@
+From 60b99252cb4552d6d198b2f94614fc13d92c15cd Mon Sep 17 00:00:00 2001
+From: kxxt <rsworktech@outlook.com>
+Date: Sat, 20 Jul 2024 00:17:31 +0800
+Subject: [PATCH] build_image.py: unlink and warn on existing dst
+
+Change-Id: Id298e494edda2fd9cb26779456a0981dc291588f
+---
+ tools/releasetools/build_image.py | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/tools/releasetools/build_image.py b/tools/releasetools/build_image.py
+index 92e6f7fea6..c99aacff85 100755
+--- a/tools/releasetools/build_image.py
++++ b/tools/releasetools/build_image.py
+@@ -956,6 +956,9 @@ def CopyInputDirectory(src, dst, filter_file):
+         os.makedirs(full_dst, exist_ok=True)
+       else:
+         os.makedirs(os.path.dirname(full_dst), exist_ok=True)
++        if os.path.exists(full_dst):
++          print(f"Warning! Possible duplicated entry {line} in {filter_file}, removing it before hard linking.", file=sys.stderr)
++          os.unlink(full_dst)
+         os.link(full_src, full_dst, follow_symlinks=False)
+ 
+ 
+-- 
+2.45.2
+
