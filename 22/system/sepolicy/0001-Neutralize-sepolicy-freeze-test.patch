@@ -1,0 +1,36 @@
+From e36e9e9cbc03c46dfbaf9e685d13bfb92bf1ce7c Mon Sep 17 00:00:00 2001
+From: kxxt <rsworktech@outlook.com>
+Date: Thu, 23 Jan 2025 10:38:02 +0800
+Subject: [PATCH] Neutralize sepolicy freeze test
+
+We are essentially a fork of Android changing the public sepolicy
+
+Change-Id: Ie3ddaf051729c82a0d89122d5997ed7be6ff095d
+---
+ tests/sepolicy_freeze_test.py | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/tests/sepolicy_freeze_test.py b/tests/sepolicy_freeze_test.py
+index fa05eb1938..eaa7d448e8 100644
+--- a/tests/sepolicy_freeze_test.py
++++ b/tests/sepolicy_freeze_test.py
+@@ -61,7 +61,7 @@ def do_main():
+         results += "The following public attributes were added:\n" + ", ".join(added_attributes) + "\n"
+ 
+     if results:
+-        sys.exit(f'''{results}
++        print(f'''{results}
+ ******************************
+ You have tried to change system/sepolicy/public after vendor API freeze.
+ To make these errors go away, you can guard types and attributes listed above,
+@@ -71,6 +71,7 @@ See an example of how to guard them:
+     https://android-review.googlesource.com/3050544
+ ******************************
+ ''')
++        sys.exit(0)
+ 
+ if __name__ == '__main__':
+     do_main()
+-- 
+2.48.1
+
