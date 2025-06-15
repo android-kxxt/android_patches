@@ -1,4 +1,4 @@
-From fe015bdda863b3a54c288fb18ce3405417c6578e Mon Sep 17 00:00:00 2001
+From 39c0787bd0cdc614d47f227ab4199628108b15d0 Mon Sep 17 00:00:00 2001
 From: Levi Zim <rsworktech@outlook.com>
 Date: Sat, 25 Jan 2025 22:26:58 +0800
 Subject: [PATCH] hack: androidmk_denylist: remove packages/
@@ -9,17 +9,17 @@ Change-Id: Ieaa3fa2fde9eacb796ffb8cdcaa06e4a1f8225cc
  1 file changed, 1 deletion(-)
 
 diff --git a/ui/build/androidmk_denylist.go b/ui/build/androidmk_denylist.go
-index 2ec897273..1c62e636d 100644
+index 6f57cb1c4..df48d70fe 100644
 --- a/ui/build/androidmk_denylist.go
 +++ b/ui/build/androidmk_denylist.go
-@@ -35,7 +35,6 @@ var androidmk_denylist []string = []string{
+@@ -38,7 +38,6 @@ var androidmk_denylist []string = []string{
  	"kernel/tests/",
  	"libcore/",
  	"libnativehelper/",
 -	"packages/",
  	"pdk/",
+ 	"platform_testing/",
  	"prebuilts/",
- 	"sdk/",
 -- 
-2.48.1
+2.49.0
 
