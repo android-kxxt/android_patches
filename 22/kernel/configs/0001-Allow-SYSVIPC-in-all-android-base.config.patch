@@ -1,28 +1,30 @@
-From 92761dfb31d232791d56e3d9109e491931594c8c Mon Sep 17 00:00:00 2001
-From: Levi Zim <rsworktech@outlook.com>
-Date: Tue, 9 Jan 2024 19:25:27 +0800
-Subject: [PATCH] android-base.config: allow SYSVIPC
+From 3bd78e884bc3104177364d60ba0e9e4fda92c396 Mon Sep 17 00:00:00 2001
+From: kxxt <rsworktech@outlook.com>
+Date: Sun, 15 Jun 2025 21:09:13 +0800
+Subject: [PATCH] Allow SYSVIPC in all android-base.config
 
-Change-Id: Idd8605129d30f78f9dd8df841d3b989e3cd97f4c
+Change-Id: Ibca4fc083e3879e8dba08f8365e19464eb1323ad
 ---
- p/android-4.4/android-base.config    | 1 -
- q/android-4.9/android-base.config    | 1 -
- r/android-4.14/android-base.config   | 1 -
- r/android-5.4/android-base.config    | 1 -
- s/android-4.19/android-base.config   | 1 -
- s/android-5.10/android-base.config   | 1 -
- s/android-5.4/android-base.config    | 1 -
- t/android-5.10/android-base.config   | 1 -
- t/android-5.15/android-base.config   | 1 -
- u/android-5.15/android-base.config   | 1 -
- u/android-6.1/android-base.config    | 1 -
- v/android-6.1/android-base.config    | 1 -
- v/android-6.6/android-base.config    | 1 -
- w/android-6.next/android-base.config | 1 -
- 14 files changed, 14 deletions(-)
+ p/android-4.4/android-base.config  | 1 -
+ q/android-4.9/android-base.config  | 1 -
+ r/android-4.14/android-base.config | 1 -
+ r/android-4.19/android-base.config | 1 -
+ r/android-5.4/android-base.config  | 1 -
+ s/android-4.14/android-base.config | 1 -
+ s/android-4.19/android-base.config | 1 -
+ s/android-5.10/android-base.config | 1 -
+ s/android-5.4/android-base.config  | 1 -
+ t/android-5.10/android-base.config | 1 -
+ t/android-5.15/android-base.config | 1 -
+ u/android-5.15/android-base.config | 1 -
+ u/android-6.1/android-base.config  | 1 -
+ v/android-6.1/android-base.config  | 1 -
+ v/android-6.6/android-base.config  | 1 -
+ w/android-6.12/android-base.config | 1 -
+ 16 files changed, 16 deletions(-)
 
 diff --git a/p/android-4.4/android-base.config b/p/android-4.4/android-base.config
-index 25dd1745..8d76d0fc 100644
+index 25dd174..8d76d0f 100644
 --- a/p/android-4.4/android-base.config
 +++ b/p/android-4.4/android-base.config
 @@ -6,7 +6,6 @@
@@ -34,7 +36,7 @@ index 25dd1745..8d76d0fc 100644
  CONFIG_ADVISE_SYSCALLS=y
  CONFIG_AIO=y
 diff --git a/q/android-4.9/android-base.config b/q/android-4.9/android-base.config
-index 136c2c23..351235cc 100644
+index 136c2c2..351235c 100644
 --- a/q/android-4.9/android-base.config
 +++ b/q/android-4.9/android-base.config
 @@ -6,7 +6,6 @@
@@ -46,7 +48,7 @@ index 136c2c23..351235cc 100644
  CONFIG_ADVISE_SYSCALLS=y
  CONFIG_AIO=y
 diff --git a/r/android-4.14/android-base.config b/r/android-4.14/android-base.config
-index a126f5d4..dc86ed2e 100644
+index a126f5d..dc86ed2 100644
 --- a/r/android-4.14/android-base.config
 +++ b/r/android-4.14/android-base.config
 @@ -8,7 +8,6 @@
@@ -57,8 +59,20 @@ index a126f5d4..dc86ed2e 100644
  # CONFIG_USELIB is not set
  # CONFIG_VHOST is not set
  CONFIG_ADVISE_SYSCALLS=y
+diff --git a/r/android-4.19/android-base.config b/r/android-4.19/android-base.config
+index fef4c6f..0cde263 100644
+--- a/r/android-4.19/android-base.config
++++ b/r/android-4.19/android-base.config
+@@ -10,7 +10,6 @@
+ # CONFIG_NFS_FS is not set
+ # CONFIG_PM_AUTOSLEEP is not set
+ # CONFIG_RT_GROUP_SCHED is not set
+-# CONFIG_SYSVIPC is not set
+ # CONFIG_USELIB is not set
+ # CONFIG_VHOST is not set
+ CONFIG_ADVISE_SYSCALLS=y
 diff --git a/r/android-5.4/android-base.config b/r/android-5.4/android-base.config
-index 15c784cc..b60a71f9 100644
+index 15c784c..b60a71f 100644
 --- a/r/android-5.4/android-base.config
 +++ b/r/android-5.4/android-base.config
 @@ -10,7 +10,6 @@
@@ -69,8 +83,20 @@ index 15c784cc..b60a71f9 100644
  # CONFIG_USELIB is not set
  # CONFIG_VHOST is not set
  CONFIG_ADVISE_SYSCALLS=y
+diff --git a/s/android-4.14/android-base.config b/s/android-4.14/android-base.config
+index 98d8607..d81dfbc 100644
+--- a/s/android-4.14/android-base.config
++++ b/s/android-4.14/android-base.config
+@@ -11,7 +11,6 @@
+ # CONFIG_NFS_FS is not set
+ # CONFIG_PM_AUTOSLEEP is not set
+ # CONFIG_RT_GROUP_SCHED is not set
+-# CONFIG_SYSVIPC is not set
+ # CONFIG_USELIB is not set
+ # CONFIG_VHOST is not set
+ CONFIG_ADVISE_SYSCALLS=y
 diff --git a/s/android-4.19/android-base.config b/s/android-4.19/android-base.config
-index d2bb2ada..705be310 100644
+index d2bb2ad..705be31 100644
 --- a/s/android-4.19/android-base.config
 +++ b/s/android-4.19/android-base.config
 @@ -11,7 +11,6 @@
@@ -82,7 +108,7 @@ index d2bb2ada..705be310 100644
  # CONFIG_VHOST is not set
  CONFIG_ADVISE_SYSCALLS=y
 diff --git a/s/android-5.10/android-base.config b/s/android-5.10/android-base.config
-index d6e1f5a3..78fbcd92 100644
+index d6e1f5a..78fbcd9 100644
 --- a/s/android-5.10/android-base.config
 +++ b/s/android-5.10/android-base.config
 @@ -11,7 +11,6 @@
@@ -94,7 +120,7 @@ index d6e1f5a3..78fbcd92 100644
  CONFIG_ADVISE_SYSCALLS=y
  CONFIG_AIO=y
 diff --git a/s/android-5.4/android-base.config b/s/android-5.4/android-base.config
-index d6e1f5a3..78fbcd92 100644
+index d6e1f5a..78fbcd9 100644
 --- a/s/android-5.4/android-base.config
 +++ b/s/android-5.4/android-base.config
 @@ -11,7 +11,6 @@
@@ -106,7 +132,7 @@ index d6e1f5a3..78fbcd92 100644
  CONFIG_ADVISE_SYSCALLS=y
  CONFIG_AIO=y
 diff --git a/t/android-5.10/android-base.config b/t/android-5.10/android-base.config
-index 52bf43df..fe717e64 100644
+index 52bf43d..fe717e6 100644
 --- a/t/android-5.10/android-base.config
 +++ b/t/android-5.10/android-base.config
 @@ -11,7 +11,6 @@
@@ -118,7 +144,7 @@ index 52bf43df..fe717e64 100644
  CONFIG_ADVISE_SYSCALLS=y
  CONFIG_AIO=y
 diff --git a/t/android-5.15/android-base.config b/t/android-5.15/android-base.config
-index 5ce4ef66..4a04a6ec 100644
+index 5ce4ef6..4a04a6e 100644
 --- a/t/android-5.15/android-base.config
 +++ b/t/android-5.15/android-base.config
 @@ -11,7 +11,6 @@
@@ -130,7 +156,7 @@ index 5ce4ef66..4a04a6ec 100644
  CONFIG_ADVISE_SYSCALLS=y
  CONFIG_AIO=y
 diff --git a/u/android-5.15/android-base.config b/u/android-5.15/android-base.config
-index bf4c7e59..f5ce33b0 100644
+index bf4c7e5..f5ce33b 100644
 --- a/u/android-5.15/android-base.config
 +++ b/u/android-5.15/android-base.config
 @@ -11,7 +11,6 @@
@@ -142,7 +168,7 @@ index bf4c7e59..f5ce33b0 100644
  CONFIG_ADVISE_SYSCALLS=y
  CONFIG_AIO=y
 diff --git a/u/android-6.1/android-base.config b/u/android-6.1/android-base.config
-index 8d668f0c..df3d6805 100644
+index 8d668f0..df3d680 100644
 --- a/u/android-6.1/android-base.config
 +++ b/u/android-6.1/android-base.config
 @@ -11,7 +11,6 @@
@@ -154,7 +180,7 @@ index 8d668f0c..df3d6805 100644
  CONFIG_ADVISE_SYSCALLS=y
  CONFIG_AIO=y
 diff --git a/v/android-6.1/android-base.config b/v/android-6.1/android-base.config
-index 4da7990c..3252294c 100644
+index 4da7990..3252294 100644
 --- a/v/android-6.1/android-base.config
 +++ b/v/android-6.1/android-base.config
 @@ -11,7 +11,6 @@
@@ -166,7 +192,7 @@ index 4da7990c..3252294c 100644
  CONFIG_ADVISE_SYSCALLS=y
  CONFIG_AIO=y
 diff --git a/v/android-6.6/android-base.config b/v/android-6.6/android-base.config
-index be666eae..c5e3ad0e 100644
+index be666ea..c5e3ad0 100644
 --- a/v/android-6.6/android-base.config
 +++ b/v/android-6.6/android-base.config
 @@ -11,7 +11,6 @@
@@ -177,10 +203,10 @@ index be666eae..c5e3ad0e 100644
  # CONFIG_USELIB is not set
  CONFIG_ADVISE_SYSCALLS=y
  CONFIG_AIO=y
-diff --git a/w/android-6.next/android-base.config b/w/android-6.next/android-base.config
-index b5edf77d..7aa2d784 100644
---- a/w/android-6.next/android-base.config
-+++ b/w/android-6.next/android-base.config
+diff --git a/w/android-6.12/android-base.config b/w/android-6.12/android-base.config
+index 1481e99..83956ae 100644
+--- a/w/android-6.12/android-base.config
++++ b/w/android-6.12/android-base.config
 @@ -11,7 +11,6 @@
  # CONFIG_NFS_FS is not set
  # CONFIG_PM_AUTOSLEEP is not set
@@ -190,5 +216,5 @@ index b5edf77d..7aa2d784 100644
  CONFIG_ADVISE_SYSCALLS=y
  CONFIG_AIO=y
 -- 
-2.48.1
+2.49.0
 
