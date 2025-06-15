@@ -24,6 +24,27 @@ fi
 msg "AOSP source tree: $TOP"
 msg "Applying patches..."
 
+# Apply the patch using git-am, 
+# fallback to 3-way am if direct am fails.
+# If 3-way am succeeded, notify user by issuing a warning.
+function git_am() {
+    if [[ $# -ne 2 ]]; then
+        error ""
+    fi
+    local workdir="$1"
+    local patch="$2"
+    if ! git -C "$TOP/$dir" am < "$patch"; then
+        msg2 "Direct am failed. Falling back to 3-way merge"
+        git -C "$TOP/$dir" am --abort || true
+        if git -C "$TOP/$dir" am -3 < "$patch"; then
+            warning "3-way merge succeeded. Please review and refresh $patch"
+        else
+            error "3-way merge failed! Please manually resolve the conflict in $TOP/$dir"
+            exit 2
+        fi
+    fi
+}
+
 find "$SCRIPT_DIR/$SUBDIR" -type f -name "*.patch" | while read patch; do
     relative="$(realpath --relative-to="$SCRIPT_DIR/$SUBDIR" "$patch")"
     dir="$(dirname "$relative")"
@@ -35,7 +56,7 @@ find "$SCRIPT_DIR/$SUBDIR" -type f -name "*.patch" | while read patch; do
             # some or all hunks are ignored
             warning "Some/All hunks are ignored when trying to applying $relative, skipping this patch"
         else
-            git -C "$TOP/$dir" am < "$patch"
+            git_am "$TOP/$dir" "$patch"
         fi
     else
         # Some hunks failed
