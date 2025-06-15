@@ -1,0 +1,29 @@
+From 7d0ed990511e876c1883bff66ffad2b81b97c08a Mon Sep 17 00:00:00 2001
+From: kxxt <rsworktech@outlook.com>
+Date: Thu, 14 Mar 2024 21:49:10 +0800
+Subject: [PATCH 2/2] Reserve more space and inodes on /vendor{,_dlkm}
+
+Change-Id: Id2961c71f53ea3f85ce9754f3c29792a3ac4b75b
+---
+ BoardConfigCommon.mk | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/BoardConfigCommon.mk b/BoardConfigCommon.mk
+index bb6af07..2da5330 100644
+--- a/BoardConfigCommon.mk
++++ b/BoardConfigCommon.mk
+@@ -186,6 +186,11 @@ TARGET_COPY_OUT_VENDOR_DLKM := vendor_dlkm
+ 
+ -include vendor/lineage/config/BoardConfigReservedSize.mk
+ 
++BOARD_VENDORIMAGE_PARTITION_RESERVED_SIZE := 1024000000
++BOARD_VENDORIMAGE_EXTFS_INODE_COUNT := -1
++BOARD_VENDOR_DLKMIMAGE_PARTITION_RESERVED_SIZE := 102400000
++BOARD_VENDOR_DLKMIMAGE_EXTFS_INODE_COUNT := -1
++
+ # Platform
+ BOARD_USES_QCOM_HARDWARE := true
+ TARGET_BOARD_PLATFORM := taro
+-- 
+2.49.0
+

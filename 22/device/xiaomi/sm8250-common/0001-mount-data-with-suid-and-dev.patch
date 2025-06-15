@@ -1,0 +1,26 @@
+From 0c8d484fbcc4cd8a98f35d8afee4982699f2d244 Mon Sep 17 00:00:00 2001
+From: kxxt <rsworktech@outlook.com>
+Date: Thu, 8 Feb 2024 16:11:19 +0800
+Subject: [PATCH] mount /data with suid and dev
+
+Change-Id: I58e1ef087e0cc2c1e06e99874e5bc39fb56e406f
+---
+ rootdir/etc/fstab.qcom | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/rootdir/etc/fstab.qcom b/rootdir/etc/fstab.qcom
+index db614ae..90ad5b1 100644
+--- a/rootdir/etc/fstab.qcom
++++ b/rootdir/etc/fstab.qcom
+@@ -41,7 +41,7 @@ product                                                 /product               e
+ vendor                                                  /vendor                erofs   ro                                                   wait,avb=vbmeta,logical,first_stage_mount
+ odm                                                     /odm                   erofs   ro                                                   wait,avb,logical,first_stage_mount
+ /dev/block/by-name/metadata                             /metadata              ext4    noatime,nosuid,nodev,discard                         wait,check,formattable,wrappedkey,first_stage_mount
+-/dev/block/bootdevice/by-name/userdata                  /data                  f2fs    noatime,nosuid,nodev,discard,reserve_root=32768,resgid=1065,fsync_mode=nobarrier,inlinecrypt    latemount,wait,check,formattable,fileencryption=ice,wrappedkey,keydirectory=/metadata/vold/metadata_encryption,quota,reservedsize=128M,sysfs_path=/sys/devices/platform/soc/1d84000.ufshc,checkpoint=fs
++/dev/block/bootdevice/by-name/userdata                  /data                  f2fs    noatime,discard,reserve_root=32768,resgid=1065,fsync_mode=nobarrier,inlinecrypt    latemount,wait,check,formattable,fileencryption=ice,wrappedkey,keydirectory=/metadata/vold/metadata_encryption,quota,reservedsize=128M,sysfs_path=/sys/devices/platform/soc/1d84000.ufshc,checkpoint=fs
+ /dev/block/bootdevice/by-name/cache                     /cache                 ext4    nosuid,noatime,nodev,barrier=1                       wait
+ /dev/block/bootdevice/by-name/persist                   /mnt/vendor/persist    ext4    noatime,nosuid,nodev,barrier=1                       wait
+ /dev/block/bootdevice/by-name/boot                      /boot                  emmc    defaults                                             defaults
+-- 
+2.49.0
+

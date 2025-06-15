@@ -1,0 +1,26 @@
+From 8168bb017ad0b47c3ef94b9ee46fe9052ee712ed Mon Sep 17 00:00:00 2001
+From: kxxt <rsworktech@outlook.com>
+Date: Wed, 31 Jan 2024 15:58:50 +0800
+Subject: [PATCH 5/5] enable more kernel configs
+
+Change-Id: I349d28d5efaba6f5f383081ee1c30794eab1d087
+---
+ arch/arm64/configs/gki_defconfig | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/arch/arm64/configs/gki_defconfig b/arch/arm64/configs/gki_defconfig
+index 38a19e4c92d7..d5a012d86a63 100644
+--- a/arch/arm64/configs/gki_defconfig
++++ b/arch/arm64/configs/gki_defconfig
+@@ -718,3 +718,8 @@ CONFIG_TRACEFS_DISABLE_AUTOMOUNT=y
+ CONFIG_HIST_TRIGGERS=y
+ CONFIG_FUNCTION_ERROR_INJECTION=y
+ # CONFIG_RUNTIME_TESTING_MENU is not set
++CONFIG_EXPERT=y
++CONFIG_DEVTMPFS=y
++CONFIG_DEVPTS_MULTIPLE_INSTANCES=y
++CONFIG_NULL_TTY=y
++CONFIG_VT=y
+-- 
+2.49.0
+
