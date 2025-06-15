@@ -1,24 +1,22 @@
-From ef3264df07160052a6e5283641802cdc0f31076b Mon Sep 17 00:00:00 2001
+From c134af3ba7ed886e9cd4c6721f54c3f19cef25a9 Mon Sep 17 00:00:00 2001
 From: kxxt <rsworktech@outlook.com>
 Date: Sat, 20 Jul 2024 07:56:58 +0800
 Subject: [PATCH] sepolicy: add support for PFA
 
 Change-Id: Id40180196e833e1f1a5bc339307dbb16f2d9a4c1
 ---
- build/soong/policy.go    |  2 +-
- private/adbd.te          |  9 ++++-
- private/apexd.te         |  3 ++
- private/bpfdomain.te     |  1 +
- private/file.te          |  2 ++
- private/file_contexts    |  7 ++++
- private/init.te          |  2 ++
- private/network_stack.te |  4 +--
- private/pfa.te           | 73 ++++++++++++++++++++++++++++++++++++++++
- private/seapp_contexts   |  5 +--
- public/file.te           |  2 ++
- public/pfa.te            |  1 +
- vendor/mediacodec.te     |  2 ++
- 13 files changed, 107 insertions(+), 6 deletions(-)
+ build/soong/policy.go  |  2 +-
+ private/adbd.te        |  9 +++++-
+ private/apexd.te       |  3 ++
+ private/file.te        |  2 ++
+ private/file_contexts  |  7 ++++
+ private/init.te        |  2 ++
+ private/pfa.te         | 73 ++++++++++++++++++++++++++++++++++++++++++
+ private/seapp_contexts |  5 +--
+ public/file.te         |  2 ++
+ public/pfa.te          |  1 +
+ vendor/mediacodec.te   |  2 ++
+ 11 files changed, 104 insertions(+), 4 deletions(-)
  create mode 100644 private/pfa.te
  create mode 100644 public/pfa.te
 
@@ -97,18 +95,6 @@ index 58a365869..cf488db39 100644
  # Only apexd and init should be allowed to manage /apex mounts
  # A note on otapreopt_chroot. It used to mount APEXes during postainstall stage of A/B OTAs,
  # but starting from S it just calls into apexd to prepare /apex for otapreoprt. Once the sepolicies
-diff --git a/private/bpfdomain.te b/private/bpfdomain.te
-index 7c8f5c075..78e05ead7 100644
---- a/private/bpfdomain.te
-+++ b/private/bpfdomain.te
-@@ -6,6 +6,7 @@ neverallow {
-   -netutils_wrapper
-   -network_stack
-   -system_server
-+  -relaxeddomain
- } self:global_capability_class_set { net_admin net_raw };
- 
- # any domain which uses bpf is a bpfdomain
 diff --git a/private/file.te b/private/file.te
 index 189fb4789..8dff9313d 100644
 --- a/private/file.te
@@ -153,21 +139,6 @@ index 012ef0bde..34f8dc134 100644
  # /dev/__null__ node created by init.
  allow init tmpfs:chr_file { create setattr unlink rw_file_perms };
  
-diff --git a/private/network_stack.te b/private/network_stack.te
-index 4450e02ba..ecb25d6ce 100644
---- a/private/network_stack.te
-+++ b/private/network_stack.te
-@@ -99,8 +99,8 @@ neverallow netd fs_bpf_netd_readonly:file write;
- 
- # T+: Only the bpfloader, netd, netutils_wrapper, network_stack and system_server should ever touch 'fs_bpf_netd_shared' programs/maps.
- # netutils_wrapper requires access to be able to run iptables and only needs readonly access
--neverallow { domain -bpfloader -netd -netutils_wrapper -network_stack -system_server } fs_bpf_netd_shared:dir ~getattr;
--neverallow { domain -bpfloader -netd -netutils_wrapper -network_stack -system_server } fs_bpf_netd_shared:file *;
-+neverallow { domain -bpfloader -netd -netutils_wrapper -network_stack -system_server -relaxeddomain } fs_bpf_netd_shared:dir ~getattr;
-+neverallow { domain -bpfloader -netd -netutils_wrapper -network_stack -system_server -relaxeddomain } fs_bpf_netd_shared:file *;
- neverallow netutils_wrapper fs_bpf_netd_shared:file write;
- 
- # S+: Only the bpfloader and the network_stack should ever touch 'fs_bpf_tethering' programs/maps.
 diff --git a/private/pfa.te b/private/pfa.te
 new file mode 100644
 index 000000000..757cdd166
