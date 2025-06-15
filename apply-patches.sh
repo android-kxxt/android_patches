@@ -2,7 +2,7 @@
 
 set -e
 
-source /usr/share/makepkg/util/message.sh
+source "$(dirname "${BASH_SOURCE[0]}")/lib/message.sh"
 colorize
 # Patches the Android source tree recursively with the patches folder.
 
