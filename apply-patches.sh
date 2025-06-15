@@ -33,7 +33,7 @@ find "$SCRIPT_DIR/$SUBDIR" -type f -name "*.patch" | while read patch; do
         # no hunk FAILED
         if grep -q "hunks\? ignored" <<< "$output"; then
             # some or all hunks are ignored
-            warning "Some/All hunks are ignored when trying to applying $relative, skiping this patch"
+            warning "Some/All hunks are ignored when trying to applying $relative, skipping this patch"
         else
             git -C "$TOP/$dir" am < "$patch"
         fi
