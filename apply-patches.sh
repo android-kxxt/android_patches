@@ -62,5 +62,6 @@ find "$SCRIPT_DIR/$SUBDIR" -type f -name "*.patch" | while read patch; do
         # Some hunks failed
         error "failed to apply $patch!"
         echo "$output"
+        exit 3
     fi
 done
