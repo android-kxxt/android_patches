@@ -1,4 +1,4 @@
-From c134af3ba7ed886e9cd4c6721f54c3f19cef25a9 Mon Sep 17 00:00:00 2001
+From b8fdf09173499bd8af0115d07e68a71225b22322 Mon Sep 17 00:00:00 2001
 From: kxxt <rsworktech@outlook.com>
 Date: Sat, 20 Jul 2024 07:56:58 +0800
 Subject: [PATCH] sepolicy: add support for PFA
@@ -6,17 +6,17 @@ Subject: [PATCH] sepolicy: add support for PFA
 Change-Id: Id40180196e833e1f1a5bc339307dbb16f2d9a4c1
 ---
  build/soong/policy.go  |  2 +-
- private/adbd.te        |  9 +++++-
+ private/adbd.te        |  9 ++++-
  private/apexd.te       |  3 ++
  private/file.te        |  2 ++
- private/file_contexts  |  7 ++++
+ private/file_contexts  |  8 +++++
  private/init.te        |  2 ++
- private/pfa.te         | 73 ++++++++++++++++++++++++++++++++++++++++++
+ private/pfa.te         | 74 ++++++++++++++++++++++++++++++++++++++++++
  private/seapp_contexts |  5 +--
  public/file.te         |  2 ++
  public/pfa.te          |  1 +
  vendor/mediacodec.te   |  2 ++
- 11 files changed, 104 insertions(+), 4 deletions(-)
+ 11 files changed, 106 insertions(+), 4 deletions(-)
  create mode 100644 private/pfa.te
  create mode 100644 public/pfa.te
 
@@ -34,14 +34,14 @@ index 8bdf01bd3..05bce423f 100644
  		cmd := rule.Command().BuiltTool("sepolicy-analyze").
  			Input(bin).
 diff --git a/private/adbd.te b/private/adbd.te
-index b87b31916..3047b1734 100644
+index b87b31916..5721b9413 100644
 --- a/private/adbd.te
 +++ b/private/adbd.te
 @@ -7,6 +7,7 @@ typeattribute adbd adbd_common;
  init_daemon_domain(adbd)
  
  domain_auto_trans(adbd, shell_exec, shell)
-+domain_auto_trans(adbd, linux_pfa_file, pfa)
++domain_auto_trans(adbd, pfa_exec, pfa)
  
  # Allow adb to setcon() to tradeinmode.
  allow adbd self:process setcurrent;
@@ -109,10 +109,10 @@ index 189fb4789..8dff9313d 100644
  type proc_dt_avf, fs_type, proc_type;
  
 diff --git a/private/file_contexts b/private/file_contexts
-index d6f7113f3..87af1719d 100644
+index d6f7113f3..06827ec7a 100644
 --- a/private/file_contexts
 +++ b/private/file_contexts
-@@ -939,6 +939,13 @@
+@@ -939,6 +939,14 @@
  /(system|product)/bin/otapreopt_script          u:object_r:postinstall_exec:s0
  /(system|product)/bin/otapreopt                 u:object_r:postinstall_dexopt_exec:s0
  
@@ -121,6 +121,7 @@ index d6f7113f3..87af1719d 100644
 +/data/(usr|var|etc|home|opt)(/.*)? u:object_r:linux_pfa_file:s0
 +/product/pfa-installation-archive.tar.zst  u:object_r:linux_pfa_file:s0
 +/system/bin/pfa-firstboot u:object_r:pfa_exec:s0
++/system/bin/shell-selector u:object_r:pfa_exec:s0
 +/nix(/.*)? u:object_r:linux_pfa_file:s0
 +
  #############################
@@ -141,12 +142,13 @@ index 012ef0bde..34f8dc134 100644
  
 diff --git a/private/pfa.te b/private/pfa.te
 new file mode 100644
-index 000000000..757cdd166
+index 000000000..475b79864
 --- /dev/null
 +++ b/private/pfa.te
-@@ -0,0 +1,73 @@
+@@ -0,0 +1,74 @@
 +permissive pfa ;
-+type_transition shell linux_pfa_file : process pfa ;
++# type_transition shell linux_pfa_file : process pfa ;
++# file_type_auto_trans(pfa, system_data_file, linux_pfa_file)
 +allow shell pfa : process transition ;
 +allow shell pfa : process2 nosuid_transition ;
 +allow shell linux_pfa_file:{ fifo_file file dir lnk_file anon_inode } * ;
@@ -154,11 +156,11 @@ index 000000000..757cdd166
 +
 +type pfa_exec, exec_type, file_type;
 +init_daemon_domain(pfa)
++# Automatically transition to pfa domain via shell_exec
 +domain_auto_trans(init, shell_exec, pfa)
 +
 +# Scrcpy
 +allow { surfaceflinger audioserver mediaswcodec hwservicemanager mediaserver } pfa:binder { call transfer };
-+
 +
 +# PFA Shell 
 +allow shell pfa:process   { noatsecure signal siginh rlimitinh };
