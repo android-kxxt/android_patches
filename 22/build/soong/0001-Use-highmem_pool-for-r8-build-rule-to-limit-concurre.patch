@@ -1,0 +1,55 @@
+From d7f555a84b5ec73d9286fe97c03377e7e9e24ad7 Mon Sep 17 00:00:00 2001
+From: kxxt <rsworktech@outlook.com>
+Date: Sun, 22 Jun 2025 17:15:40 +0800
+Subject: [PATCH] Use highmem_pool for r8 build rule to limit concurrency
+
+r8 could easily OOM a machine with 64G memory with 32 threads
+
+Change-Id: I01570bc54b7aa0cdbc715809e91f257a007fe74d
+---
+ android/defs.go         | 2 +-
+ android/rule_builder.go | 2 +-
+ java/dex.go             | 1 +
+ 3 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/android/defs.go b/android/defs.go
+index 9f3fb1ee6..047c1e520 100644
+--- a/android/defs.go
++++ b/android/defs.go
+@@ -109,7 +109,7 @@ var (
+ 	remotePool = blueprint.NewBuiltinPool("remote_pool")
+ 
+ 	// Used for processes that need significant RAM to ensure there are not too many running in parallel.
+-	highmemPool = blueprint.NewBuiltinPool("highmem_pool")
++	HighmemPool = blueprint.NewBuiltinPool("highmem_pool")
+ )
+ 
+ func init() {
+diff --git a/android/rule_builder.go b/android/rule_builder.go
+index db56c3f29..0aeb6ee98 100644
+--- a/android/rule_builder.go
++++ b/android/rule_builder.go
+@@ -870,7 +870,7 @@ func (r *RuleBuilder) build(name string, desc string) {
+ 		// When USE_RBE=true is set and the rule is supported by RBE, use the remotePool.
+ 		pool = remotePool
+ 	} else if r.highmem {
+-		pool = highmemPool
++		pool = HighmemPool
+ 	} else if r.ctx.Config().UseRemoteBuild() {
+ 		pool = localPool
+ 	}
+diff --git a/java/dex.go b/java/dex.go
+index 2b3c9319a..c9436b2d8 100644
+--- a/java/dex.go
++++ b/java/dex.go
+@@ -175,6 +175,7 @@ var r8, r8RE = pctx.MultiCommandRemoteStaticRules("r8",
+ 			`rm -f "$outDir"/classes*.dex "$outDir/classes.dex.jar"`,
+ 		Depfile: "${out}.d",
+ 		Deps:    blueprint.DepsGCC,
++		Pool:    android.HighmemPool,
+ 		CommandDeps: []string{
+ 			"${config.R8Cmd}",
+ 			"${config.SoongZipCmd}",
+-- 
+2.49.0
+
