@@ -1,18 +1,18 @@
-From 3db17c0a5b2398ea197e908912e5f3c83aade729 Mon Sep 17 00:00:00 2001
+From 28475c1d87d285e097b23fb4eba697bed4f51cec Mon Sep 17 00:00:00 2001
 From: kxxt <rsworktech@outlook.com>
 Date: Fri, 8 Dec 2023 20:14:34 +0800
 Subject: [PATCH] lmi: make it more linux-ish
 
 Change-Id: I9c2402a329eee2356b79ad1327ec368fa7360dd6
 ---
- arch/arm64/configs/vendor/xiaomi/lmi.config | 45 +++++++++++++++++++++
- 1 file changed, 45 insertions(+)
+ arch/arm64/configs/vendor/xiaomi/lmi.config | 46 +++++++++++++++++++++
+ 1 file changed, 46 insertions(+)
 
 diff --git a/arch/arm64/configs/vendor/xiaomi/lmi.config b/arch/arm64/configs/vendor/xiaomi/lmi.config
-index aa6169e97cae..97d64db5568e 100644
+index aa6169e97cae..66564e076aab 100644
 --- a/arch/arm64/configs/vendor/xiaomi/lmi.config
 +++ b/arch/arm64/configs/vendor/xiaomi/lmi.config
-@@ -20,3 +20,48 @@ CONFIG_INPUT_AW8697_HAPTIC=y
+@@ -20,3 +20,49 @@ CONFIG_INPUT_AW8697_HAPTIC=y
  
  # Camera
  CONFIG_TECHPACK_CAMERA_XIAOMI=y
@@ -61,6 +61,7 @@ index aa6169e97cae..97d64db5568e 100644
 +# eBPF
 +CONFIG_KPROBES=y
 +CONFIG_FUNCTION_TRACER=y
++CONFIG_DEBUG_FS=y
 -- 
 2.49.0
 
