@@ -1,18 +1,19 @@
-From 0896c2ce07d758dcce34f8355fdda38f443a9fb9 Mon Sep 17 00:00:00 2001
+From ff7c17eda93123e57140ea08834afbe70707cdc1 Mon Sep 17 00:00:00 2001
 From: kxxt <rsworktech@outlook.com>
 Date: Wed, 31 Jan 2024 15:58:50 +0800
 Subject: [PATCH] enable more kernel configs
 
 Change-Id: I349d28d5efaba6f5f383081ee1c30794eab1d087
 ---
- arch/arm64/configs/gki_defconfig | 7 +++++++
- 1 file changed, 7 insertions(+)
+ arch/arm64/configs/gki_defconfig         | 6 ++++++
+ arch/arm64/configs/vendor/debugfs.config | 2 +-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
 
 diff --git a/arch/arm64/configs/gki_defconfig b/arch/arm64/configs/gki_defconfig
-index 912049431f4a..5f354d4eaf7c 100644
+index 912049431f4a..65e81f79139f 100644
 --- a/arch/arm64/configs/gki_defconfig
 +++ b/arch/arm64/configs/gki_defconfig
-@@ -700,3 +700,10 @@ CONFIG_TRACEFS_DISABLE_AUTOMOUNT=y
+@@ -700,3 +700,9 @@ CONFIG_TRACEFS_DISABLE_AUTOMOUNT=y
  CONFIG_HIST_TRIGGERS=y
  CONFIG_FUNCTION_ERROR_INJECTION=y
  # CONFIG_RUNTIME_TESTING_MENU is not set
@@ -22,6 +23,15 @@ index 912049431f4a..5f354d4eaf7c 100644
 +CONFIG_NULL_TTY=y
 +CONFIG_VT=y
 +CONFIG_FUNCTION_TRACER=y
+diff --git a/arch/arm64/configs/vendor/debugfs.config b/arch/arm64/configs/vendor/debugfs.config
+index d13694029b61..1be32f85dfba 100644
+--- a/arch/arm64/configs/vendor/debugfs.config
++++ b/arch/arm64/configs/vendor/debugfs.config
+@@ -1,4 +1,4 @@
+ CONFIG_CMA_DEBUGFS=n
+ CONFIG_PAGE_OWNER=n
+ CONFIG_PAGE_PINNER=n
+-CONFIG_DEBUG_FS=n
 +CONFIG_DEBUG_FS=y
 -- 
 2.49.0
