@@ -1,4 +1,4 @@
-From b8fdf09173499bd8af0115d07e68a71225b22322 Mon Sep 17 00:00:00 2001
+From d102b39fed1a1ec78fda9fa2947528436a7955c4 Mon Sep 17 00:00:00 2001
 From: kxxt <rsworktech@outlook.com>
 Date: Sat, 20 Jul 2024 07:56:58 +0800
 Subject: [PATCH] sepolicy: add support for PFA
@@ -11,12 +11,12 @@ Change-Id: Id40180196e833e1f1a5bc339307dbb16f2d9a4c1
  private/file.te        |  2 ++
  private/file_contexts  |  8 +++++
  private/init.te        |  2 ++
- private/pfa.te         | 74 ++++++++++++++++++++++++++++++++++++++++++
+ private/pfa.te         | 76 ++++++++++++++++++++++++++++++++++++++++++
  private/seapp_contexts |  5 +--
  public/file.te         |  2 ++
  public/pfa.te          |  1 +
  vendor/mediacodec.te   |  2 ++
- 11 files changed, 106 insertions(+), 4 deletions(-)
+ 11 files changed, 108 insertions(+), 4 deletions(-)
  create mode 100644 private/pfa.te
  create mode 100644 public/pfa.te
 
@@ -142,10 +142,10 @@ index 012ef0bde..34f8dc134 100644
  
 diff --git a/private/pfa.te b/private/pfa.te
 new file mode 100644
-index 000000000..475b79864
+index 000000000..2c7b3e2d6
 --- /dev/null
 +++ b/private/pfa.te
-@@ -0,0 +1,74 @@
+@@ -0,0 +1,76 @@
 +permissive pfa ;
 +# type_transition shell linux_pfa_file : process pfa ;
 +# file_type_auto_trans(pfa, system_data_file, linux_pfa_file)
@@ -158,6 +158,8 @@ index 000000000..475b79864
 +init_daemon_domain(pfa)
 +# Automatically transition to pfa domain via shell_exec
 +domain_auto_trans(init, shell_exec, pfa)
++domain_auto_trans(shell, pfa_exec, pfa)
++domain_auto_trans(shell, linux_pfa_file, pfa)
 +
 +# Scrcpy
 +allow { surfaceflinger audioserver mediaswcodec hwservicemanager mediaserver } pfa:binder { call transfer };
