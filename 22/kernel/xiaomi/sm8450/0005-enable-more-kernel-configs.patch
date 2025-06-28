@@ -1,19 +1,24 @@
-From ff7c17eda93123e57140ea08834afbe70707cdc1 Mon Sep 17 00:00:00 2001
+From 94213288b5d02f81214448af7f80b00136aa8c30 Mon Sep 17 00:00:00 2001
 From: kxxt <rsworktech@outlook.com>
 Date: Wed, 31 Jan 2024 15:58:50 +0800
 Subject: [PATCH] enable more kernel configs
 
 Change-Id: I349d28d5efaba6f5f383081ee1c30794eab1d087
 ---
- arch/arm64/configs/gki_defconfig         | 6 ++++++
- arch/arm64/configs/vendor/debugfs.config | 2 +-
- 2 files changed, 7 insertions(+), 1 deletion(-)
+ arch/arm64/configs/gki_defconfig         | 8 +++++++-
+ arch/arm64/configs/vendor/debugfs.config | 6 +++++-
+ 2 files changed, 12 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm64/configs/gki_defconfig b/arch/arm64/configs/gki_defconfig
-index 912049431f4a..65e81f79139f 100644
+index 912049431f4a..2c093bfa1a2d 100644
 --- a/arch/arm64/configs/gki_defconfig
 +++ b/arch/arm64/configs/gki_defconfig
-@@ -700,3 +700,9 @@ CONFIG_TRACEFS_DISABLE_AUTOMOUNT=y
+@@ -696,7 +696,13 @@ CONFIG_WQ_WATCHDOG=y
+ CONFIG_SCHEDSTATS=y
+ CONFIG_BUG_ON_DATA_CORRUPTION=y
+ CONFIG_TRACE_MMIO_ACCESS=y
+-CONFIG_TRACEFS_DISABLE_AUTOMOUNT=y
++# CONFIG_TRACEFS_DISABLE_AUTOMOUNT is not set
  CONFIG_HIST_TRIGGERS=y
  CONFIG_FUNCTION_ERROR_INJECTION=y
  # CONFIG_RUNTIME_TESTING_MENU is not set
@@ -24,15 +29,19 @@ index 912049431f4a..65e81f79139f 100644
 +CONFIG_VT=y
 +CONFIG_FUNCTION_TRACER=y
 diff --git a/arch/arm64/configs/vendor/debugfs.config b/arch/arm64/configs/vendor/debugfs.config
-index d13694029b61..1be32f85dfba 100644
+index d13694029b61..08def1b74c2d 100644
 --- a/arch/arm64/configs/vendor/debugfs.config
 +++ b/arch/arm64/configs/vendor/debugfs.config
-@@ -1,4 +1,4 @@
+@@ -1,4 +1,8 @@
  CONFIG_CMA_DEBUGFS=n
  CONFIG_PAGE_OWNER=n
  CONFIG_PAGE_PINNER=n
 -CONFIG_DEBUG_FS=n
++# Don't debug regulator and other hardcore hardware
++CONFIG_REGULATOR_DEBUG_CONTROL=n
++CONFIG_IPC_LOGGING=n
++CONFIG_REGMAP_QTI_DEBUGFS=n
 +CONFIG_DEBUG_FS=y
 -- 
-2.49.0
+2.39.5
 
