@@ -1,19 +1,27 @@
-From 94213288b5d02f81214448af7f80b00136aa8c30 Mon Sep 17 00:00:00 2001
+From 0fdfd38dc9212713915ea679235a85dc24c26ab9 Mon Sep 17 00:00:00 2001
 From: kxxt <rsworktech@outlook.com>
 Date: Wed, 31 Jan 2024 15:58:50 +0800
 Subject: [PATCH] enable more kernel configs
 
 Change-Id: I349d28d5efaba6f5f383081ee1c30794eab1d087
 ---
- arch/arm64/configs/gki_defconfig         | 8 +++++++-
+ arch/arm64/configs/gki_defconfig         | 9 ++++++++-
  arch/arm64/configs/vendor/debugfs.config | 6 +++++-
- 2 files changed, 12 insertions(+), 2 deletions(-)
+ 2 files changed, 13 insertions(+), 2 deletions(-)
 
 diff --git a/arch/arm64/configs/gki_defconfig b/arch/arm64/configs/gki_defconfig
-index 912049431f4a..2c093bfa1a2d 100644
+index 912049431f4a..450d26122806 100644
 --- a/arch/arm64/configs/gki_defconfig
 +++ b/arch/arm64/configs/gki_defconfig
-@@ -696,7 +696,13 @@ CONFIG_WQ_WATCHDOG=y
+@@ -669,6 +669,7 @@ CONFIG_PRINTK_TIME=y
+ CONFIG_PRINTK_CALLER=y
+ CONFIG_DYNAMIC_DEBUG_CORE=y
+ CONFIG_DEBUG_INFO=y
++CONFIG_DEBUG_INFO_BTF=y
+ CONFIG_DEBUG_INFO_DWARF4=y
+ # CONFIG_ENABLE_MUST_CHECK is not set
+ CONFIG_HEADERS_INSTALL=y
+@@ -696,7 +697,13 @@ CONFIG_WQ_WATCHDOG=y
  CONFIG_SCHEDSTATS=y
  CONFIG_BUG_ON_DATA_CORRUPTION=y
  CONFIG_TRACE_MMIO_ACCESS=y
@@ -43,5 +51,5 @@ index d13694029b61..08def1b74c2d 100644
 +CONFIG_REGMAP_QTI_DEBUGFS=n
 +CONFIG_DEBUG_FS=y
 -- 
-2.39.5
+2.49.0
 
