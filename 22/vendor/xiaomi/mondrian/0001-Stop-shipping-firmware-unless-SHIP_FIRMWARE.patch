@@ -1,0 +1,50 @@
+From 859c18324903808363880bd6b6ad7c9d0621cb34 Mon Sep 17 00:00:00 2001
+From: kxxt <rsworktech@outlook.com>
+Date: Sun, 29 Jun 2025 20:38:47 +0800
+Subject: [PATCH] Stop shipping firmware unless SHIP_FIRMWARE
+
+Change-Id: I8d36fabc3c0ffcfeb63dd8a164f2050ac309ce3c
+---
+ Android.mk           | 2 ++
+ BoardConfigVendor.mk | 4 ++++
+ 2 files changed, 6 insertions(+)
+
+diff --git a/Android.mk b/Android.mk
+index 58e4e44..e7f095d 100644
+--- a/Android.mk
++++ b/Android.mk
+@@ -5,6 +5,7 @@
+ LOCAL_PATH := $(call my-dir)
+ 
+ ifeq ($(TARGET_DEVICE),mondrian)
++ifdef SHIP_FIRMWARE
+ 
+ $(call add-radio-file-sha1-checked,radio/abl.img,1466509da2ebb779f3ba3353cc86880acbcaa1ec)
+ $(call add-radio-file-sha1-checked,radio/aop.img,f79093ad433d59b91cc5d7ede6e23d8f114e35c8)
+@@ -29,3 +30,4 @@ $(call add-radio-file-sha1-checked,radio/xbl_config.img,a5a5e2fadaf81a13df875102
+ $(call add-radio-file-sha1-checked,radio/xbl_ramdump.img,6d2bd182046070aa22a71722d17a95567a4a5961)
+ 
+ endif
++endif
+diff --git a/BoardConfigVendor.mk b/BoardConfigVendor.mk
+index 52e19d3..52af9ec 100644
+--- a/BoardConfigVendor.mk
++++ b/BoardConfigVendor.mk
+@@ -2,6 +2,8 @@
+ # Automatically generated file. DO NOT MODIFY
+ #
+ 
++ifdef SHIP_FIRMWARE
++
+ AB_OTA_PARTITIONS += \
+     abl \
+     aop \
+@@ -24,3 +26,5 @@ AB_OTA_PARTITIONS += \
+     xbl \
+     xbl_config \
+     xbl_ramdump
++
++endif
+-- 
+2.49.0
+
