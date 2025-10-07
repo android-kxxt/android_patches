@@ -1,14 +1,12 @@
-From 3bd78e884bc3104177364d60ba0e9e4fda92c396 Mon Sep 17 00:00:00 2001
+From 0044fbc811bd192b846a6fcdb72a14d7b49e5535 Mon Sep 17 00:00:00 2001
 From: kxxt <rsworktech@outlook.com>
 Date: Sun, 15 Jun 2025 21:09:13 +0800
 Subject: [PATCH] Allow SYSVIPC in all android-base.config
 
 Change-Id: Ibca4fc083e3879e8dba08f8365e19464eb1323ad
 ---
- p/android-4.4/android-base.config  | 1 -
- q/android-4.9/android-base.config  | 1 -
- r/android-4.14/android-base.config | 1 -
- r/android-4.19/android-base.config | 1 -
+ b/android-6.12/android-base.config | 1 -
+ c/android-6.12/android-base.config | 1 -
  r/android-5.4/android-base.config  | 1 -
  s/android-4.14/android-base.config | 1 -
  s/android-4.19/android-base.config | 1 -
@@ -20,57 +18,32 @@ Change-Id: Ibca4fc083e3879e8dba08f8365e19464eb1323ad
  u/android-6.1/android-base.config  | 1 -
  v/android-6.1/android-base.config  | 1 -
  v/android-6.6/android-base.config  | 1 -
- w/android-6.12/android-base.config | 1 -
- 16 files changed, 16 deletions(-)
+ 13 files changed, 13 deletions(-)
 
-diff --git a/p/android-4.4/android-base.config b/p/android-4.4/android-base.config
-index 25dd174..8d76d0f 100644
---- a/p/android-4.4/android-base.config
-+++ b/p/android-4.4/android-base.config
-@@ -6,7 +6,6 @@
- # CONFIG_NETFILTER_XT_MATCH_QTAGUID is not set
- # CONFIG_NFSD is not set
- # CONFIG_NFS_FS is not set
--# CONFIG_SYSVIPC is not set
- # CONFIG_USELIB is not set
- CONFIG_ADVISE_SYSCALLS=y
- CONFIG_AIO=y
-diff --git a/q/android-4.9/android-base.config b/q/android-4.9/android-base.config
-index 136c2c2..351235c 100644
---- a/q/android-4.9/android-base.config
-+++ b/q/android-4.9/android-base.config
-@@ -6,7 +6,6 @@
- # CONFIG_NFSD is not set
- # CONFIG_NFS_FS is not set
- # CONFIG_PM_AUTOSLEEP is not set
--# CONFIG_SYSVIPC is not set
- # CONFIG_USELIB is not set
- CONFIG_ADVISE_SYSCALLS=y
- CONFIG_AIO=y
-diff --git a/r/android-4.14/android-base.config b/r/android-4.14/android-base.config
-index a126f5d..dc86ed2 100644
---- a/r/android-4.14/android-base.config
-+++ b/r/android-4.14/android-base.config
-@@ -8,7 +8,6 @@
+diff --git a/b/android-6.12/android-base.config b/b/android-6.12/android-base.config
+index 1481e99..83956ae 100644
+--- a/b/android-6.12/android-base.config
++++ b/b/android-6.12/android-base.config
+@@ -11,7 +11,6 @@
  # CONFIG_NFS_FS is not set
  # CONFIG_PM_AUTOSLEEP is not set
  # CONFIG_RT_GROUP_SCHED is not set
 -# CONFIG_SYSVIPC is not set
  # CONFIG_USELIB is not set
- # CONFIG_VHOST is not set
  CONFIG_ADVISE_SYSCALLS=y
-diff --git a/r/android-4.19/android-base.config b/r/android-4.19/android-base.config
-index fef4c6f..0cde263 100644
---- a/r/android-4.19/android-base.config
-+++ b/r/android-4.19/android-base.config
-@@ -10,7 +10,6 @@
+ CONFIG_AIO=y
+diff --git a/c/android-6.12/android-base.config b/c/android-6.12/android-base.config
+index 1481e99..83956ae 100644
+--- a/c/android-6.12/android-base.config
++++ b/c/android-6.12/android-base.config
+@@ -11,7 +11,6 @@
  # CONFIG_NFS_FS is not set
  # CONFIG_PM_AUTOSLEEP is not set
  # CONFIG_RT_GROUP_SCHED is not set
 -# CONFIG_SYSVIPC is not set
  # CONFIG_USELIB is not set
- # CONFIG_VHOST is not set
  CONFIG_ADVISE_SYSCALLS=y
+ CONFIG_AIO=y
 diff --git a/r/android-5.4/android-base.config b/r/android-5.4/android-base.config
 index 15c784c..b60a71f 100644
 --- a/r/android-5.4/android-base.config
@@ -84,7 +57,7 @@ index 15c784c..b60a71f 100644
  # CONFIG_VHOST is not set
  CONFIG_ADVISE_SYSCALLS=y
 diff --git a/s/android-4.14/android-base.config b/s/android-4.14/android-base.config
-index 98d8607..d81dfbc 100644
+index 8087261..5d4a00c 100644
 --- a/s/android-4.14/android-base.config
 +++ b/s/android-4.14/android-base.config
 @@ -11,7 +11,6 @@
@@ -203,18 +176,6 @@ index be666ea..c5e3ad0 100644
  # CONFIG_USELIB is not set
  CONFIG_ADVISE_SYSCALLS=y
  CONFIG_AIO=y
-diff --git a/w/android-6.12/android-base.config b/w/android-6.12/android-base.config
-index 1481e99..83956ae 100644
---- a/w/android-6.12/android-base.config
-+++ b/w/android-6.12/android-base.config
-@@ -11,7 +11,6 @@
- # CONFIG_NFS_FS is not set
- # CONFIG_PM_AUTOSLEEP is not set
- # CONFIG_RT_GROUP_SCHED is not set
--# CONFIG_SYSVIPC is not set
- # CONFIG_USELIB is not set
- CONFIG_ADVISE_SYSCALLS=y
- CONFIG_AIO=y
 -- 
-2.49.0
+2.51.0
 
