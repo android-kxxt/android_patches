@@ -1,0 +1,80 @@
+From 42c4105731ae1119741ffc7038b18e66201f9ffa Mon Sep 17 00:00:00 2001
+From: Alban Crequy <alban@kinvolk.io>
+Date: Sun, 14 Apr 2019 18:58:46 +0200
+Subject: [PATCH 7/7] bpf: add map helper functions push, pop, peek in more BPF
+ programs
+
+commit f1a2e44a3aec ("bpf: add queue and stack maps") introduced new BPF
+helper functions:
+- BPF_FUNC_map_push_elem
+- BPF_FUNC_map_pop_elem
+- BPF_FUNC_map_peek_elem
+
+but they were made available only for network BPF programs. This patch
+makes them available for tracepoint, cgroup and lirc programs.
+
+Change-Id: I494f7b20e7e47e693a473beb217277f527547d34
+Signed-off-by: Alban Crequy <alban@kinvolk.io>
+Cc: Mauricio Vasquez B <mauricio.vasquez@polito.it>
+Acked-by: Song Liu <songliubraving@fb.com>
+Signed-off-by: Daniel Borkmann <daniel@iogearbox.net>
+---
+ drivers/media/rc/bpf-lirc.c | 6 ++++++
+ kernel/bpf/cgroup.c         | 6 ++++++
+ kernel/trace/bpf_trace.c    | 6 ++++++
+ 3 files changed, 18 insertions(+)
+
+diff --git a/drivers/media/rc/bpf-lirc.c b/drivers/media/rc/bpf-lirc.c
+index ca00c6cc110d..a3fc3812eaee 100644
+--- a/drivers/media/rc/bpf-lirc.c
++++ b/drivers/media/rc/bpf-lirc.c
+@@ -73,6 +73,12 @@ lirc_mode2_func_proto(enum bpf_func_id func_id, const struct bpf_prog *prog)
+ 		return &bpf_map_update_elem_proto;
+ 	case BPF_FUNC_map_delete_elem:
+ 		return &bpf_map_delete_elem_proto;
++	case BPF_FUNC_map_push_elem:
++		return &bpf_map_push_elem_proto;
++	case BPF_FUNC_map_pop_elem:
++		return &bpf_map_pop_elem_proto;
++	case BPF_FUNC_map_peek_elem:
++		return &bpf_map_peek_elem_proto;
+ 	case BPF_FUNC_ktime_get_ns:
+ 		return &bpf_ktime_get_ns_proto;
+ 	case BPF_FUNC_ktime_get_boot_ns:
+diff --git a/kernel/bpf/cgroup.c b/kernel/bpf/cgroup.c
+index 6a7d931bbc55..9a6cebaf5892 100644
+--- a/kernel/bpf/cgroup.c
++++ b/kernel/bpf/cgroup.c
+@@ -673,6 +673,12 @@ cgroup_dev_func_proto(enum bpf_func_id func_id, const struct bpf_prog *prog)
+ 		return &bpf_map_update_elem_proto;
+ 	case BPF_FUNC_map_delete_elem:
+ 		return &bpf_map_delete_elem_proto;
++	case BPF_FUNC_map_push_elem:
++		return &bpf_map_push_elem_proto;
++	case BPF_FUNC_map_pop_elem:
++		return &bpf_map_pop_elem_proto;
++	case BPF_FUNC_map_peek_elem:
++		return &bpf_map_peek_elem_proto;
+ 	case BPF_FUNC_get_current_uid_gid:
+ 		return &bpf_get_current_uid_gid_proto;
+ 	case BPF_FUNC_get_local_storage:
+diff --git a/kernel/trace/bpf_trace.c b/kernel/trace/bpf_trace.c
+index 2c4f414bf0b8..975985944030 100644
+--- a/kernel/trace/bpf_trace.c
++++ b/kernel/trace/bpf_trace.c
+@@ -589,6 +589,12 @@ tracing_func_proto(enum bpf_func_id func_id, const struct bpf_prog *prog)
+ 		return &bpf_map_update_elem_proto;
+ 	case BPF_FUNC_map_delete_elem:
+ 		return &bpf_map_delete_elem_proto;
++	case BPF_FUNC_map_push_elem:
++		return &bpf_map_push_elem_proto;
++	case BPF_FUNC_map_pop_elem:
++		return &bpf_map_pop_elem_proto;
++	case BPF_FUNC_map_peek_elem:
++		return &bpf_map_peek_elem_proto;
+ 	case BPF_FUNC_probe_read:
+ 		return &bpf_probe_read_proto;
+ 	case BPF_FUNC_ktime_get_ns:
+-- 
+2.49.0
+

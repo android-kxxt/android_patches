@@ -1,0 +1,48 @@
+From ea1e6b5f224c76bcec6fb8c17a90556685cbd5e0 Mon Sep 17 00:00:00 2001
+From: kxxt <rsworktech@outlook.com>
+Date: Sat, 28 Jun 2025 22:57:01 +0800
+Subject: [PATCH] Updater: Support build tags template param in serverUrl
+
+Change-Id: I8cf893c83bc82759c4e2c5f9190595dd0303d4a5
+---
+ app/src/main/java/org/lineageos/updater/misc/Constants.java | 1 +
+ app/src/main/java/org/lineageos/updater/misc/Utils.java     | 4 +++-
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/app/src/main/java/org/lineageos/updater/misc/Constants.java b/app/src/main/java/org/lineageos/updater/misc/Constants.java
+index dfff5af..d598464 100644
+--- a/app/src/main/java/org/lineageos/updater/misc/Constants.java
++++ b/app/src/main/java/org/lineageos/updater/misc/Constants.java
+@@ -41,6 +41,7 @@ public final class Constants {
+     public static final String PROP_AB_DEVICE = "ro.build.ab_update";
+     public static final String PROP_ALLOW_MAJOR_UPGRADES = "lineage.updater.allow_major_upgrades";
+     public static final String PROP_BUILD_DATE = "ro.build.date.utc";
++    public static final String PROP_BUILD_TAGS = "ro.build.tags";
+     public static final String PROP_BUILD_VERSION = "ro.lineage.build.version";
+     public static final String PROP_BUILD_VERSION_INCREMENTAL = "ro.build.version.incremental";
+     public static final String PROP_DEVICE = "ro.lineage.device";
+diff --git a/app/src/main/java/org/lineageos/updater/misc/Utils.java b/app/src/main/java/org/lineageos/updater/misc/Utils.java
+index 518c8e7..b0f7895 100644
+--- a/app/src/main/java/org/lineageos/updater/misc/Utils.java
++++ b/app/src/main/java/org/lineageos/updater/misc/Utils.java
+@@ -166,6 +166,7 @@ public class Utils {
+         String device = SystemProperties.get(Constants.PROP_NEXT_DEVICE,
+                 SystemProperties.get(Constants.PROP_DEVICE));
+         String type = SystemProperties.get(Constants.PROP_RELEASE_TYPE).toLowerCase(Locale.ROOT);
++        String tags = SystemProperties.get(Constants.PROP_BUILD_TAGS);
+ 
+         String serverUrl = SystemProperties.get(Constants.PROP_UPDATER_URI);
+         if (serverUrl.trim().isEmpty()) {
+@@ -174,7 +175,8 @@ public class Utils {
+ 
+         return serverUrl.replace("{device}", device)
+                 .replace("{type}", type)
+-                .replace("{incr}", incrementalVersion);
++                .replace("{incr}", incrementalVersion)
++                .replace("{tags}", tags);
+     }
+ 
+     public static String getUpgradeBlockedURL(Context context) {
+-- 
+2.49.0
+

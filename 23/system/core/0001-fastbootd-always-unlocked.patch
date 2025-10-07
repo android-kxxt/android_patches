@@ -1,0 +1,26 @@
+From a02906dabb373a636cee75b1167262936faec8e0 Mon Sep 17 00:00:00 2001
+From: kxxt <rsworktech@outlook.com>
+Date: Sun, 4 Feb 2024 16:13:59 +0800
+Subject: [PATCH] fastbootd: always unlocked!
+
+Change-Id: Ifd2a6f8b129a861cf4cad2b15883ac63abf5c6f4
+---
+ fastboot/device/utility.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/fastboot/device/utility.cpp b/fastboot/device/utility.cpp
+index 2d9b71213..c13331bc1 100644
+--- a/fastboot/device/utility.cpp
++++ b/fastboot/device/utility.cpp
+@@ -196,7 +196,7 @@ std::vector<std::string> ListPartitions(FastbootDevice* device) {
+ }
+ 
+ bool GetDeviceLockStatus() {
+-    return android::base::GetProperty("ro.boot.verifiedbootstate", "") == "green";
++    return false;
+ }
+ 
+ bool UpdateAllPartitionMetadata(FastbootDevice* device, const std::string& super_name,
+-- 
+2.43.0
+

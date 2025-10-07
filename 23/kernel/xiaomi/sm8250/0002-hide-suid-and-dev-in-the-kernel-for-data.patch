@@ -1,0 +1,40 @@
+From 360ce0a2e5b7dedb67b9ec22bfae638e1cacbcf4 Mon Sep 17 00:00:00 2001
+From: kxxt <rsworktech@outlook.com>
+Date: Thu, 8 Feb 2024 16:22:56 +0800
+Subject: [PATCH 2/2] hide suid and dev in the kernel for /data
+
+Change-Id: I81bed8e97b60fa844581eab2433e0ca19e9bdc98
+---
+ fs/proc_namespace.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/fs/proc_namespace.c b/fs/proc_namespace.c
+index bd07f0f4f06b..48e9330cbf3c 100644
+--- a/fs/proc_namespace.c
++++ b/fs/proc_namespace.c
+@@ -74,8 +74,21 @@ static void show_mnt_opts(struct seq_file *m, struct vfsmount *mnt)
+ 	};
+ 	const struct proc_fs_info *fs_infop;
+ 
++    struct mount *r = real_mount(mnt);
++    int flags = mnt->mnt_flags;
++    char pathbuf[16], *path;
++    path = dentry_path_raw(mnt->mnt_root, pathbuf, sizeof(pathbuf));
++    if (!IS_ERR(path) && strcmp(path, "/") == 0) {
++		path = dentry_path_raw(r->mnt_mountpoint, pathbuf, sizeof(pathbuf));
++		if (!IS_ERR(path) && strcmp(path, "/data") == 0) {
++			flags |= MNT_NOSUID;
++			flags |= MNT_NODEV;
++			pr_info("kxxt: fake nosuid and nodev for /data");
++		}
++    }
++
+ 	for (fs_infop = mnt_info; fs_infop->flag; fs_infop++) {
+-		if (mnt->mnt_flags & fs_infop->flag)
++		if (flags & fs_infop->flag)
+ 			seq_puts(m, fs_infop->str);
+ 	}
+ }
+-- 
+2.49.0
+

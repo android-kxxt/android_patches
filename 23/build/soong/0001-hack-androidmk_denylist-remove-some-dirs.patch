@@ -1,0 +1,30 @@
+From 8bcf1d805cccee3d3c36196103aa5fda970625fc Mon Sep 17 00:00:00 2001
+From: Levi Zim <rsworktech@outlook.com>
+Date: Sat, 25 Jan 2025 22:26:58 +0800
+Subject: [PATCH] hack: androidmk_denylist: remove some dirs
+
+Change-Id: Ieaa3fa2fde9eacb796ffb8cdcaa06e4a1f8225cc
+---
+ ui/build/androidmk_denylist.go | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/ui/build/androidmk_denylist.go b/ui/build/androidmk_denylist.go
+index cf97f1c2f..c1823a7cd 100644
+--- a/ui/build/androidmk_denylist.go
++++ b/ui/build/androidmk_denylist.go
+@@ -47,12 +47,8 @@ var androidmk_denylist []string = []string{
+ 	"kernel/tests/",
+ 	"libcore/",
+ 	"libnativehelper/",
+-	"packages/",
+ 	"pdk/",
+ 	"platform_testing/",
+-	"prebuilts/",
+-	"sdk/",
+-	"system/",
+ 	"test/",
+ 	"tools/",
+ 	"trusty/",
+-- 
+2.39.5
+

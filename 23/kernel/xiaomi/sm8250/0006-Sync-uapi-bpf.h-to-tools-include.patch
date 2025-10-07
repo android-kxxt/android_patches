@@ -1,0 +1,68 @@
+From b0869782550d8046343c1fa5993583ddcf0212cf Mon Sep 17 00:00:00 2001
+From: Mauricio Vasquez B <mauricio.vasquez@polito.it>
+Date: Thu, 18 Oct 2018 15:16:36 +0200
+Subject: [PATCH 6/7] Sync uapi/bpf.h to tools/include
+
+Sync both files.
+
+Change-Id: I30170e1ea540cc7d3d882cab31a31dca22ddd3e5
+Signed-off-by: Mauricio Vasquez B <mauricio.vasquez@polito.it>
+Acked-by: Song Liu <songliubraving@fb.com>
+Signed-off-by: Alexei Starovoitov <ast@kernel.org>
+---
+ tools/include/uapi/linux/bpf.h | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+
+diff --git a/tools/include/uapi/linux/bpf.h b/tools/include/uapi/linux/bpf.h
+index 0fe33356c251..715eda0e53af 100644
+--- a/tools/include/uapi/linux/bpf.h
++++ b/tools/include/uapi/linux/bpf.h
+@@ -103,6 +103,7 @@ enum bpf_cmd {
+ 	BPF_BTF_LOAD,
+ 	BPF_BTF_GET_FD_BY_ID,
+ 	BPF_TASK_FD_QUERY,
++	BPF_MAP_LOOKUP_AND_DELETE_ELEM,
+ };
+ 
+ enum bpf_map_type {
+@@ -127,6 +128,8 @@ enum bpf_map_type {
+ 	BPF_MAP_TYPE_SOCKHASH,
+ 	BPF_MAP_TYPE_CGROUP_STORAGE,
+ 	BPF_MAP_TYPE_REUSEPORT_SOCKARRAY,
++	BPF_MAP_TYPE_QUEUE,
++	BPF_MAP_TYPE_STACK,
+ };
+ 
+ enum bpf_prog_type {
+@@ -473,6 +476,28 @@ union bpf_attr {
+  * 	Return
+  * 		0 on success, or a negative error in case of failure.
+  *
++ * int bpf_map_push_elem(struct bpf_map *map, const void *value, u64 flags)
++ * 	Description
++ * 		Push an element *value* in *map*. *flags* is one of:
++ *
++ * 		**BPF_EXIST**
++ * 		If the queue/stack is full, the oldest element is removed to
++ * 		make room for this.
++ * 	Return
++ * 		0 on success, or a negative error in case of failure.
++ *
++ * int bpf_map_pop_elem(struct bpf_map *map, void *value)
++ * 	Description
++ * 		Pop an element from *map*.
++ * Return
++ * 		0 on success, or a negative error in case of failure.
++ *
++ * int bpf_map_peek_elem(struct bpf_map *map, void *value)
++ * 	Description
++ * 		Get an element from *map* without removing it.
++ * Return
++ * 		0 on success, or a negative error in case of failure.
++ *
+  * int bpf_probe_read(void *dst, u32 size, const void *src)
+  * 	Description
+  * 		For tracing programs, safely attempt to read *size* bytes from
+-- 
+2.49.0
+

@@ -1,0 +1,278 @@
+From 32c53a5511695d2320d53ba83d5c61d664896677 Mon Sep 17 00:00:00 2001
+From: Chirayu Desai <chirayudesai1@gmail.com>
+Date: Fri, 31 Dec 2021 04:02:13 +0530
+Subject: [PATCH] Add setting for timeout-reboot
+
+* Reboots the device automatically if not used for a certain
+  period of time
+* Based on Bluetooth and Wifi TimeoutPreferenceControllers
+
+Also includes:
+commit cadb100e580cad2540188f43738274bca4035288
+Author:     Oliver Scott <olivercscott@gmail.com>
+AuthorDate: Mon Apr 10 18:18:32 2023 -0400
+Commit:     Chirayu Desai <chirayudesai1@gmail.com>
+CommitDate: Thu Oct 12 01:42:09 2023 +0530
+
+    fixup! Add standalone "Restrict USB" setting for Settings -> Security
+
+    Issue: calyxos#1164
+    Change-Id: I6b0defac5e02cbb8d64d53e3e929dd2db7dc446b
+
+Change-Id: I39c90c1b1f7562ffb85c2c45ce6c50f400f16074
+---
+ res/values/calyx_arrays.xml                   |  55 +++++++++
+ res/values/calyx_strings.xml                  |  40 +++++++
+ res/xml/more_security_privacy_settings.xml    |   9 ++
+ ...viceRebootTimeoutPreferenceController.java | 110 ++++++++++++++++++
+ 4 files changed, 214 insertions(+)
+ create mode 100644 res/values/calyx_arrays.xml
+ create mode 100644 res/values/calyx_strings.xml
+ create mode 100644 src/com/android/settings/security/DeviceRebootTimeoutPreferenceController.java
+
+diff --git a/res/values/calyx_arrays.xml b/res/values/calyx_arrays.xml
+new file mode 100644
+index 00000000000..3331a36e19b
+--- /dev/null
++++ b/res/values/calyx_arrays.xml
+@@ -0,0 +1,55 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++     Copyright (C) 2020-2021 The Calyx Institute
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++<resources>
++    <!-- Auto reboot settings. The delay in activity before a locked device is rebooted. These are shown in a list dialog. -->
++    <string-array name="device_reboot_timeout_entries">
++        <item>@string/timeout_summary_never</item>
++        <item>@string/timeout_summary_1hour</item>
++        <item>@string/timeout_summary_2hours</item>
++        <item>@string/timeout_summary_4hours</item>
++        <item>@string/timeout_summary_8hours</item>
++        <item>@string/timeout_summary_12hours</item>
++        <item>@string/timeout_summary_24hours</item>
++        <item>@string/timeout_summary_36hours</item>
++        <item>@string/timeout_summary_48hours</item>
++        <item>@string/timeout_summary_72hours</item>
++    </string-array>
++
++    <!-- Do not translate. -->
++    <string-array name="device_reboot_timeout_values" translatable="false">
++        <!-- Do not translate. -->
++        <item>0</item>
++        <!-- Do not translate. -->
++        <item>3600000</item>
++        <!-- Do not translate. -->
++        <item>7200000</item>
++        <!-- Do not translate. -->
++        <item>14400000</item>
++        <!-- Do not translate. -->
++        <item>28800000</item>
++        <!-- Do not translate. -->
++        <item>43200000</item>
++        <!-- Do not translate. -->
++        <item>86400000</item>
++        <!-- Do not translate. -->
++        <item>129600000</item>
++        <!-- Do not translate. -->
++        <item>172800000</item>
++        <!-- Do not translate. -->
++        <item>259200000</item>
++    </string-array>
++</resources>
+diff --git a/res/values/calyx_strings.xml b/res/values/calyx_strings.xml
+new file mode 100644
+index 00000000000..5fe769dffa5
+--- /dev/null
++++ b/res/values/calyx_strings.xml
+@@ -0,0 +1,40 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++     Copyright (C) 2020-2021 The Calyx Institute
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
++    <!-- Timeout entries -->
++    <string name="timeout_summary_never">Never</string>
++    <string name="timeout_summary_15secs">15 seconds</string>
++    <string name="timeout_summary_30secs">30 seconds</string>
++    <string name="timeout_summary_1min">1 minute</string>
++    <string name="timeout_summary_2mins">2 minutes</string>
++    <string name="timeout_summary_5mins">5 minutes</string>
++    <string name="timeout_summary_10mins">10 minutes</string>
++    <string name="timeout_summary_30mins">30 minutes</string>
++    <string name="timeout_summary_1hour">1 hour</string>
++    <string name="timeout_summary_2hours">2 hours</string>
++    <string name="timeout_summary_4hours">4 hours</string>
++    <string name="timeout_summary_8hours">8 hours</string>
++    <string name="timeout_summary_12hours">12 hours</string>
++    <string name="timeout_summary_24hours">24 hours</string>
++    <string name="timeout_summary_36hours">36 hours</string>
++    <string name="timeout_summary_48hours">48 hours</string>
++    <string name="timeout_summary_72hours">72 hours</string>
++
++    <string name="device_reboot_timeout_title">Auto reboot</string>
++    <string name="device_reboot_timeout_summary">The device will automatically reboot if it hasn\'t been unlocked within the last <xliff:g id="timeout_description">%1$s</xliff:g></string>
++    <string name="device_reboot_timeout_summary2">The device will not automatically reboot</string>
++</resources>
+diff --git a/res/xml/more_security_privacy_settings.xml b/res/xml/more_security_privacy_settings.xml
+index 92c3fa7a9e5..bf211add519 100644
+--- a/res/xml/more_security_privacy_settings.xml
++++ b/res/xml/more_security_privacy_settings.xml
+@@ -127,6 +127,15 @@
+         android:key="security_category"
+         android:title="@string/security_header" />
+ 
++    <ListPreference
++        android:order="220"
++        android:key="device_reboot_timeout"
++        android:entries="@array/device_reboot_timeout_entries"
++        android:entryValues="@array/device_reboot_timeout_values"
++        android:summary="@string/device_reboot_timeout_summary"
++        android:title="@string/device_reboot_timeout_title"
++        settings:controller="com.android.settings.security.DeviceRebootTimeoutPreferenceController" />
++
+     <Preference
+         android:order="230"
+         android:key="content_protection_preference"
+diff --git a/src/com/android/settings/security/DeviceRebootTimeoutPreferenceController.java b/src/com/android/settings/security/DeviceRebootTimeoutPreferenceController.java
+new file mode 100644
+index 00000000000..a4a6019fdeb
+--- /dev/null
++++ b/src/com/android/settings/security/DeviceRebootTimeoutPreferenceController.java
+@@ -0,0 +1,110 @@
++/*
++ * Copyright (C) 2020-2021 The Calyx Institute
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.settings.security;
++
++import android.content.Context;
++import android.os.UserManager;
++import android.util.Log;
++
++import androidx.preference.ListPreference;
++import androidx.preference.Preference;
++
++import com.android.settings.R;
++import com.android.settings.core.BasePreferenceController;
++import com.android.settings.core.PreferenceControllerMixin;
++
++import lineageos.providers.LineageSettings;
++
++public class DeviceRebootTimeoutPreferenceController extends BasePreferenceController implements
++        PreferenceControllerMixin, Preference.OnPreferenceChangeListener {
++    private static final String TAG = "RebootTimeoutPrefCtrl";
++
++    public static final int FALLBACK_DEVICE_REBOOT_TIMEOUT_VALUE = 0;
++
++    private final String mDeviceRebootTimeoutKey;
++
++    public DeviceRebootTimeoutPreferenceController(Context context, String key) {
++        super(context, key);
++        mDeviceRebootTimeoutKey = key;
++    }
++
++    @Override
++    public int getAvailabilityStatus() {
++        return UserManager.get(mContext).isAdminUser() ? AVAILABLE : DISABLED_FOR_USER;
++    }
++
++    @Override
++    public String getPreferenceKey() {
++        return mDeviceRebootTimeoutKey;
++    }
++
++    @Override
++    public void updateState(Preference preference) {
++        final ListPreference timeoutListPreference = (ListPreference) preference;
++        final long currentTimeout = LineageSettings.Global.getLong(mContext.getContentResolver(),
++                LineageSettings.Global.DEVICE_REBOOT_TIMEOUT, FALLBACK_DEVICE_REBOOT_TIMEOUT_VALUE);
++        timeoutListPreference.setValue(String.valueOf(currentTimeout));
++        updateTimeoutPreferenceDescription(timeoutListPreference,
++                Long.parseLong(timeoutListPreference.getValue()));
++    }
++
++    @Override
++    public boolean onPreferenceChange(Preference preference, Object newValue) {
++        try {
++            long value = Long.parseLong((String) newValue);
++            LineageSettings.Global.putLong(mContext.getContentResolver(),
++                    LineageSettings.Global.DEVICE_REBOOT_TIMEOUT, value);
++            updateTimeoutPreferenceDescription((ListPreference) preference, value);
++        } catch (NumberFormatException e) {
++            Log.e(TAG, "could not persist reboot timeout setting", e);
++        }
++        return true;
++    }
++
++    public static CharSequence getTimeoutDescription(
++            long currentTimeout, CharSequence[] entries, CharSequence[] values) {
++        if (currentTimeout < 0 || entries == null || values == null
++                || values.length != entries.length) {
++            return null;
++        }
++
++        for (int i = 0; i < values.length; i++) {
++            long timeout = Long.parseLong(values[i].toString());
++            if (currentTimeout == timeout) {
++                return entries[i];
++            }
++        }
++        return null;
++    }
++
++    private void updateTimeoutPreferenceDescription(ListPreference preference,
++                                                    long currentTimeout) {
++        final CharSequence[] entries = preference.getEntries();
++        final CharSequence[] values = preference.getEntryValues();
++        final CharSequence timeoutDescription = getTimeoutDescription(
++                currentTimeout, entries, values);
++        String summary = "";
++        if (timeoutDescription != null) {
++            if (currentTimeout != 0)
++                summary = mContext.getString(R.string.device_reboot_timeout_summary,
++                        timeoutDescription);
++            else
++                summary = mContext.getString(R.string.device_reboot_timeout_summary2);
++        }
++        preference.setSummary(summary);
++    }
++}
+-- 
+2.45.2
+

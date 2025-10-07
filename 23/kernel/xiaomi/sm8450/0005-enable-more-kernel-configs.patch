@@ -1,0 +1,55 @@
+From 0fdfd38dc9212713915ea679235a85dc24c26ab9 Mon Sep 17 00:00:00 2001
+From: kxxt <rsworktech@outlook.com>
+Date: Wed, 31 Jan 2024 15:58:50 +0800
+Subject: [PATCH] enable more kernel configs
+
+Change-Id: I349d28d5efaba6f5f383081ee1c30794eab1d087
+---
+ arch/arm64/configs/gki_defconfig         | 9 ++++++++-
+ arch/arm64/configs/vendor/debugfs.config | 6 +++++-
+ 2 files changed, 13 insertions(+), 2 deletions(-)
+
+diff --git a/arch/arm64/configs/gki_defconfig b/arch/arm64/configs/gki_defconfig
+index 912049431f4a..450d26122806 100644
+--- a/arch/arm64/configs/gki_defconfig
++++ b/arch/arm64/configs/gki_defconfig
+@@ -669,6 +669,7 @@ CONFIG_PRINTK_TIME=y
+ CONFIG_PRINTK_CALLER=y
+ CONFIG_DYNAMIC_DEBUG_CORE=y
+ CONFIG_DEBUG_INFO=y
++CONFIG_DEBUG_INFO_BTF=y
+ CONFIG_DEBUG_INFO_DWARF4=y
+ # CONFIG_ENABLE_MUST_CHECK is not set
+ CONFIG_HEADERS_INSTALL=y
+@@ -696,7 +697,13 @@ CONFIG_WQ_WATCHDOG=y
+ CONFIG_SCHEDSTATS=y
+ CONFIG_BUG_ON_DATA_CORRUPTION=y
+ CONFIG_TRACE_MMIO_ACCESS=y
+-CONFIG_TRACEFS_DISABLE_AUTOMOUNT=y
++# CONFIG_TRACEFS_DISABLE_AUTOMOUNT is not set
+ CONFIG_HIST_TRIGGERS=y
+ CONFIG_FUNCTION_ERROR_INJECTION=y
+ # CONFIG_RUNTIME_TESTING_MENU is not set
++CONFIG_EXPERT=y
++CONFIG_DEVTMPFS=y
++CONFIG_DEVPTS_MULTIPLE_INSTANCES=y
++CONFIG_NULL_TTY=y
++CONFIG_VT=y
++CONFIG_FUNCTION_TRACER=y
+diff --git a/arch/arm64/configs/vendor/debugfs.config b/arch/arm64/configs/vendor/debugfs.config
+index d13694029b61..08def1b74c2d 100644
+--- a/arch/arm64/configs/vendor/debugfs.config
++++ b/arch/arm64/configs/vendor/debugfs.config
+@@ -1,4 +1,8 @@
+ CONFIG_CMA_DEBUGFS=n
+ CONFIG_PAGE_OWNER=n
+ CONFIG_PAGE_PINNER=n
+-CONFIG_DEBUG_FS=n
++# Don't debug regulator and other hardcore hardware
++CONFIG_REGULATOR_DEBUG_CONTROL=n
++CONFIG_IPC_LOGGING=n
++CONFIG_REGMAP_QTI_DEBUGFS=n
++CONFIG_DEBUG_FS=y
+-- 
+2.49.0
+

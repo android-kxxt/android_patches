@@ -1,0 +1,25 @@
+From 0b5c01cee1bbd536847edeeca154de8ffda1f942 Mon Sep 17 00:00:00 2001
+From: Levi Zim <rsworktech@outlook.com>
+Date: Sun, 14 Jan 2024 23:02:05 +0800
+Subject: [PATCH] hack: add android 12 codename/API-level mapping
+
+Change-Id: Id65461b4238ca109a1566412eef333a475b93ea2
+---
+ tools/releasetools/sign_target_files_apks.py | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/tools/releasetools/sign_target_files_apks.py b/tools/releasetools/sign_target_files_apks.py
+index 089d8f745..aed9aa880 100755
+--- a/tools/releasetools/sign_target_files_apks.py
++++ b/tools/releasetools/sign_target_files_apks.py
+@@ -1203,6 +1203,7 @@ def GetCodenameToApiLevelMap(input_tf_zip):
+     codename = codename.strip()
+     if codename:
+       result[codename] = api_level
++  result['S'] = 31
+   return result
+ 
+ 
+-- 
+2.43.0
+

@@ -1,0 +1,120 @@
+From dc496b5571cc7419237ef30a02d18b35fccbd00c Mon Sep 17 00:00:00 2001
+From: Mauricio Vasquez B <mauricio.vasquez@polito.it>
+Date: Thu, 18 Oct 2018 15:16:30 +0200
+Subject: [PATCH 5/7] bpf: add MAP_LOOKUP_AND_DELETE_ELEM syscall
+
+The previous patch implemented a bpf queue/stack maps that
+provided the peek/pop/push functions.  There is not a direct
+relationship between those functions and the current maps
+syscalls, hence a new MAP_LOOKUP_AND_DELETE_ELEM syscall is added,
+this is mapped to the pop operation in the queue/stack maps
+and it is still to implement in other kind of maps.
+
+Change-Id: I469a1c83f7618cd0fc2febe3212969cda3a2bbb8
+Signed-off-by: Mauricio Vasquez B <mauricio.vasquez@polito.it>
+Acked-by: Song Liu <songliubraving@fb.com>
+Signed-off-by: Alexei Starovoitov <ast@kernel.org>
+---
+ include/uapi/linux/bpf.h |  1 +
+ kernel/bpf/syscall.c     | 66 ++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 67 insertions(+)
+
+diff --git a/include/uapi/linux/bpf.h b/include/uapi/linux/bpf.h
+index 252229ab81eb..8c3e9d44208a 100644
+--- a/include/uapi/linux/bpf.h
++++ b/include/uapi/linux/bpf.h
+@@ -103,6 +103,7 @@ enum bpf_cmd {
+ 	BPF_BTF_LOAD,
+ 	BPF_BTF_GET_FD_BY_ID,
+ 	BPF_TASK_FD_QUERY,
++	BPF_MAP_LOOKUP_AND_DELETE_ELEM,
+ };
+ 
+ enum bpf_map_type {
+diff --git a/kernel/bpf/syscall.c b/kernel/bpf/syscall.c
+index 40d68a6442d9..696516fd5480 100644
+--- a/kernel/bpf/syscall.c
++++ b/kernel/bpf/syscall.c
+@@ -1000,6 +1000,69 @@ static int map_get_next_key(union bpf_attr *attr)
+ 	return err;
+ }
+ 
++#define BPF_MAP_LOOKUP_AND_DELETE_ELEM_LAST_FIELD value
++
++static int map_lookup_and_delete_elem(union bpf_attr *attr)
++{
++	void __user *ukey = u64_to_user_ptr(attr->key);
++	void __user *uvalue = u64_to_user_ptr(attr->value);
++	int ufd = attr->map_fd;
++	struct bpf_map *map;
++	void *key, *value;
++	u32 value_size;
++	struct fd f;
++	int err;
++
++	if (CHECK_ATTR(BPF_MAP_LOOKUP_AND_DELETE_ELEM))
++		return -EINVAL;
++
++	f = fdget(ufd);
++	map = __bpf_map_get(f);
++	if (IS_ERR(map))
++		return PTR_ERR(map);
++
++	if (!(f.file->f_mode & FMODE_CAN_WRITE)) {
++		err = -EPERM;
++		goto err_put;
++	}
++
++	key = __bpf_copy_key(ukey, map->key_size);
++	if (IS_ERR(key)) {
++		err = PTR_ERR(key);
++		goto err_put;
++	}
++
++	value_size = map->value_size;
++
++	err = -ENOMEM;
++	value = kmalloc(value_size, GFP_USER | __GFP_NOWARN);
++	if (!value)
++		goto free_key;
++
++	if (map->map_type == BPF_MAP_TYPE_QUEUE ||
++	    map->map_type == BPF_MAP_TYPE_STACK) {
++		err = map->ops->map_pop_elem(map, value);
++	} else {
++		err = -ENOTSUPP;
++	}
++
++	if (err)
++		goto free_value;
++
++	if (copy_to_user(uvalue, value, value_size) != 0)
++		goto free_value;
++
++	err = 0;
++
++free_value:
++	kfree(value);
++free_key:
++	kfree(key);
++err_put:
++	fdput(f);
++	return err;
++}
++
+ static const struct bpf_prog_ops * const bpf_prog_types[] = {
+ #define BPF_PROG_TYPE(_id, _name) \
+ 	[_id] = & _name ## _prog_ops,
+@@ -2489,6 +2552,9 @@ SYSCALL_DEFINE3(bpf, int, cmd, union bpf_attr __user *, uattr, unsigned int, siz
+ 	case BPF_TASK_FD_QUERY:
+ 		err = bpf_task_fd_query(&attr, uattr);
+ 		break;
++	case BPF_MAP_LOOKUP_AND_DELETE_ELEM:
++		err = map_lookup_and_delete_elem(&attr);
++		break;
+ 	default:
+ 		err = -EINVAL;
+ 		break;
+-- 
+2.49.0
+

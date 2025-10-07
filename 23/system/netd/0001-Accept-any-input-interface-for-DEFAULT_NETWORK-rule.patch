@@ -1,0 +1,26 @@
+From ed46a02dd329bc5eb12c206b4fa08b77f8b1e1fd Mon Sep 17 00:00:00 2001
+From: kxxt <rsworktech@outlook.com>
+Date: Sat, 28 Jun 2025 10:24:29 +0800
+Subject: [PATCH] Accept any input interface for DEFAULT_NETWORK rule
+
+Change-Id: Iea7b17aa26f2afde591889dc852ec10365548ec0
+---
+ server/RouteController.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/server/RouteController.cpp b/server/RouteController.cpp
+index e1ff4695..63fa179d 100644
+--- a/server/RouteController.cpp
++++ b/server/RouteController.cpp
+@@ -1113,7 +1113,7 @@ int RouteController::modifyDefaultNetwork(uint16_t action, const char* interface
+     mask.permission = permission;
+ 
+     return modifyIpRule(action, RULE_PRIORITY_DEFAULT_NETWORK, table, fwmark.intValue,
+-                        mask.intValue, IIF_LOOPBACK, OIF_NONE, INVALID_UID, INVALID_UID);
++                        mask.intValue, IIF_NONE, OIF_NONE, INVALID_UID, INVALID_UID);
+ }
+ 
+ int RouteController::modifyTetheredNetwork(uint16_t action, const char* inputInterface,
+-- 
+2.49.0
+
