@@ -1,4 +1,4 @@
-From 15dbf3b789f6357321200b79d244eb20ee0ea87a Mon Sep 17 00:00:00 2001
+From edde19ebffddb7537f21fa5d2031521e63714d88 Mon Sep 17 00:00:00 2001
 From: kxxt <rsworktech@outlook.com>
 Date: Sun, 15 Jun 2025 21:12:50 +0800
 Subject: [PATCH] Allow checkfc warnings on test data
@@ -9,18 +9,18 @@ Change-Id: I60c32f6749fc1ebea96e2bd75429c7759053d08f
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/tools/checkfc.c b/tools/checkfc.c
-index 904f02f9b..46df6c38a 100644
+index c89c7cb33..7c165249b 100644
 --- a/tools/checkfc.c
 +++ b/tools/checkfc.c
-@@ -355,7 +355,7 @@ static void do_test_data_and_die_on_error(struct selinux_opt opts[], unsigned in
+@@ -358,7 +358,7 @@ static void do_test_data_and_die_on_error(struct selinux_opt opts[], unsigned in
      if (warnings) {
          fprintf(stderr, "No test entries were found for the contexts above. " \
                          "You may need to update %s.\n", paths[1]);
--        exit(1);
-+        exit(0); // HACK: allow it because I am tired of updating plat_file_contexts_test
+-        exit(EXIT_MISSING_TEST_ENTRIES);
++        exit(0);
      }
  }
  
 -- 
-2.49.0
+2.52.0
 
