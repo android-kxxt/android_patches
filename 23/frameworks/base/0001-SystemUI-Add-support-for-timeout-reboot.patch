@@ -1,4 +1,4 @@
-From 292276d8e0b90d7984b83653e1bc46f6606502ec Mon Sep 17 00:00:00 2001
+From dc3d472491876326d4496081a5f556f02631a94e Mon Sep 17 00:00:00 2001
 From: Luca Stefani <luca.stefani.ge1@gmail.com>
 Date: Thu, 30 Dec 2021 22:33:02 +0100
 Subject: [PATCH] SystemUI: Add support for timeout-reboot
@@ -23,10 +23,10 @@ Change-Id: I23170e5ec3ae296a4aa1d9c1793d61c8399c4d54
  3 files changed, 63 insertions(+)
 
 diff --git a/data/etc/com.android.systemui.xml b/data/etc/com.android.systemui.xml
-index 3eadf3b94515..aa40600a8d8b 100644
+index b632df559ff8..cab75becd366 100644
 --- a/data/etc/com.android.systemui.xml
 +++ b/data/etc/com.android.systemui.xml
-@@ -86,6 +86,7 @@
+@@ -88,6 +88,7 @@
          <permission name="android.permission.LOG_COMPAT_CHANGE" />
          <permission name="android.permission.READ_COMPAT_CHANGE_CONFIG" />
          <permission name="android.permission.READ_DEVICE_CONFIG" />
@@ -35,10 +35,10 @@ index 3eadf3b94515..aa40600a8d8b 100644
          <permission name="android.permission.SET_UNRESTRICTED_KEEP_CLEAR_AREAS" />
          <permission name="android.permission.READ_SEARCH_INDEXABLES" />
 diff --git a/packages/SystemUI/AndroidManifest.xml b/packages/SystemUI/AndroidManifest.xml
-index 8a97d0f7ac11..ddd7a25c7a4c 100644
+index b2bb50d21de9..b815fae2817c 100644
 --- a/packages/SystemUI/AndroidManifest.xml
 +++ b/packages/SystemUI/AndroidManifest.xml
-@@ -388,6 +388,8 @@
+@@ -392,6 +392,8 @@
      <!-- Listen to (dis-)connection of external displays and enable / disable them. -->
      <uses-permission android:name="android.permission.MANAGE_DISPLAYS" />
  
@@ -48,7 +48,7 @@ index 8a97d0f7ac11..ddd7a25c7a4c 100644
           is ready -->
      <uses-permission android:name="android.permission.OVERRIDE_SYSTEM_KEY_BEHAVIOR_IN_FOCUSED_WINDOW" />
 diff --git a/packages/SystemUI/src/com/android/systemui/keyguard/KeyguardViewMediator.java b/packages/SystemUI/src/com/android/systemui/keyguard/KeyguardViewMediator.java
-index 0b6f168a0cfc..8e2f6a81c3ba 100644
+index ea9047194e2b..4765aeed9ea3 100644
 --- a/packages/SystemUI/src/com/android/systemui/keyguard/KeyguardViewMediator.java
 +++ b/packages/SystemUI/src/com/android/systemui/keyguard/KeyguardViewMediator.java
 @@ -185,6 +185,8 @@ import com.android.systemui.wallpapers.data.repository.WallpaperRepository;
@@ -59,7 +59,7 @@ index 0b6f168a0cfc..8e2f6a81c3ba 100644
 +
  import dagger.Lazy;
  
- import kotlinx.coroutines.CoroutineDispatcher;
+ import kotlinx.coroutines.CoroutineScope;
 @@ -256,6 +258,8 @@ public class KeyguardViewMediator implements CoreStartable,
          "com.android.internal.policy.impl.PhoneWindowManager.DELAYED_KEYGUARD";
      private static final String DELAYED_LOCK_PROFILE_ACTION =
@@ -82,7 +82,7 @@ index 0b6f168a0cfc..8e2f6a81c3ba 100644
      /**
       * How long we'll wait for the {@link ViewMediatorCallback#keyguardDoneDrawing()}
       * callback before unblocking a call to {@link #setKeyguardEnabled(boolean)}
-@@ -452,6 +462,11 @@ public class KeyguardViewMediator implements CoreStartable,
+@@ -454,6 +464,11 @@ public class KeyguardViewMediator implements CoreStartable,
       */
      private int mDelayedProfileShowingSequence;
  
@@ -94,7 +94,7 @@ index 0b6f168a0cfc..8e2f6a81c3ba 100644
      private final DismissCallbackRegistry mDismissCallbackRegistry;
  
      // the properties of the keyguard
-@@ -929,6 +944,9 @@ public class KeyguardViewMediator implements CoreStartable,
+@@ -958,6 +973,9 @@ public class KeyguardViewMediator implements CoreStartable,
          public void keyguardGone() {
              Trace.beginSection("KeyguardViewMediator.mViewMediatorCallback#keyguardGone");
              if (DEBUG) Log.d(TAG, "keyguardGone");
@@ -104,7 +104,7 @@ index 0b6f168a0cfc..8e2f6a81c3ba 100644
              mKeyguardViewControllerLazy.get().setKeyguardGoingAwayState(false);
              mKeyguardDisplayManager.hide();
              mUpdateMonitor.startBiometricWatchdog();
-@@ -1669,6 +1687,7 @@ public class KeyguardViewMediator implements CoreStartable,
+@@ -1720,6 +1738,7 @@ public class KeyguardViewMediator implements CoreStartable,
          final IntentFilter delayedActionFilter = new IntentFilter();
          delayedActionFilter.addAction(DELAYED_KEYGUARD_ACTION);
          delayedActionFilter.addAction(DELAYED_LOCK_PROFILE_ACTION);
@@ -112,7 +112,7 @@ index 0b6f168a0cfc..8e2f6a81c3ba 100644
          delayedActionFilter.setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY);
          mContext.registerReceiver(mDelayedLockBroadcastReceiver, delayedActionFilter,
                  SYSTEMUI_PERMISSION, null /* scheduler */,
-@@ -2004,6 +2023,17 @@ public class KeyguardViewMediator implements CoreStartable,
+@@ -2055,6 +2074,17 @@ public class KeyguardViewMediator implements CoreStartable,
          return timeout;
      }
  
@@ -130,7 +130,7 @@ index 0b6f168a0cfc..8e2f6a81c3ba 100644
      private void doKeyguardLaterLocked() {
          long timeout = getLockTimeout(mSelectedUserInteractor.getSelectedUserId());
          if (timeout == 0) {
-@@ -2063,6 +2093,19 @@ public class KeyguardViewMediator implements CoreStartable,
+@@ -2114,6 +2144,19 @@ public class KeyguardViewMediator implements CoreStartable,
          }
      }
  
@@ -150,7 +150,7 @@ index 0b6f168a0cfc..8e2f6a81c3ba 100644
      private void cancelDoKeyguardLaterLocked() {
          mDelayedShowingSequence++;
      }
-@@ -2071,6 +2114,12 @@ public class KeyguardViewMediator implements CoreStartable,
+@@ -2122,6 +2165,12 @@ public class KeyguardViewMediator implements CoreStartable,
          mDelayedProfileShowingSequence++;
      }
  
@@ -163,7 +163,7 @@ index 0b6f168a0cfc..8e2f6a81c3ba 100644
      /**
       * It will let us know when the device is waking up.
       */
-@@ -2532,6 +2581,10 @@ public class KeyguardViewMediator implements CoreStartable,
+@@ -2598,6 +2647,10 @@ public class KeyguardViewMediator implements CoreStartable,
  
          if (DEBUG) Log.d(TAG, "doKeyguard: showing the lock screen");
          showKeyguard(options);
@@ -174,7 +174,7 @@ index 0b6f168a0cfc..8e2f6a81c3ba 100644
      }
  
      @SuppressLint("MissingPermission")
-@@ -2717,6 +2770,13 @@ public class KeyguardViewMediator implements CoreStartable,
+@@ -2779,6 +2832,13 @@ public class KeyguardViewMediator implements CoreStartable,
                          }
                      }
                  }
@@ -189,5 +189,5 @@ index 0b6f168a0cfc..8e2f6a81c3ba 100644
          }
      };
 -- 
-2.39.5
+2.52.0
 

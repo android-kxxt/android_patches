@@ -1,4 +1,4 @@
-From d102b39fed1a1ec78fda9fa2947528436a7955c4 Mon Sep 17 00:00:00 2001
+From 385a118b567b02bdf5a44009932f1988aefe9396 Mon Sep 17 00:00:00 2001
 From: kxxt <rsworktech@outlook.com>
 Date: Sat, 20 Jul 2024 07:56:58 +0800
 Subject: [PATCH] sepolicy: add support for PFA
@@ -21,10 +21,10 @@ Change-Id: Id40180196e833e1f1a5bc339307dbb16f2d9a4c1
  create mode 100644 public/pfa.te
 
 diff --git a/build/soong/policy.go b/build/soong/policy.go
-index 8bdf01bd3..05bce423f 100644
+index 8359acd92..95a19092b 100644
 --- a/build/soong/policy.go
 +++ b/build/soong/policy.go
-@@ -531,7 +531,7 @@ func (c *policyBinary) GenerateAndroidBuildActions(ctx android.ModuleContext) {
+@@ -540,7 +540,7 @@ func (c *policyBinary) GenerateAndroidBuildActions(ctx android.ModuleContext) {
  	rule.Temporary(bin)
  
  	// permissive check is performed only in user build (not debuggable).
@@ -34,7 +34,7 @@ index 8bdf01bd3..05bce423f 100644
  		cmd := rule.Command().BuiltTool("sepolicy-analyze").
  			Input(bin).
 diff --git a/private/adbd.te b/private/adbd.te
-index b87b31916..5721b9413 100644
+index 6bef6f8bf..f078a9cdb 100644
 --- a/private/adbd.te
 +++ b/private/adbd.te
 @@ -7,6 +7,7 @@ typeattribute adbd adbd_common;
@@ -43,9 +43,9 @@ index b87b31916..5721b9413 100644
  domain_auto_trans(adbd, shell_exec, shell)
 +domain_auto_trans(adbd, pfa_exec, pfa)
  
- # Allow adb to setcon() to tradeinmode.
- allow adbd self:process setcurrent;
-@@ -34,6 +35,7 @@ unix_socket_connect(adbd, traced_consumer, traced)
+ # Allow adbd inside vm to forward vm's vsock.
+ allow adbd self:vsock_socket { create_socket_perms_no_ioctl listen accept };
+@@ -37,6 +38,7 @@ unix_socket_connect(adbd, traced_consumer, traced)
  # Do not sanitize the environment or open fds of the shell. Allow signaling
  # created processes.
  allow adbd shell:process { noatsecure signal };
@@ -53,7 +53,7 @@ index b87b31916..5721b9413 100644
  
  # Set UID and GID to shell.  Set supplementary groups.
  allow adbd self:global_capability_class_set { setuid setgid };
-@@ -186,6 +188,8 @@ allow adbd perfetto_configs_data_file:file create_file_perms;
+@@ -196,6 +198,8 @@ allow adbd perfetto_configs_data_file:file create_file_perms;
  # Used for e.g. abb.
  allow adbd shell:unix_stream_socket { read write shutdown };
  allow adbd shell:fd use;
@@ -62,7 +62,7 @@ index b87b31916..5721b9413 100644
  
  # adb push/pull /data/local/tmp.
  allow adbd shell_data_file:dir create_dir_perms;
-@@ -210,6 +214,9 @@ allow adbd shell_test_data_file:dir create_dir_perms;
+@@ -220,6 +224,9 @@ allow adbd shell_test_data_file:dir create_dir_perms;
  allow adbd shell_test_data_file:file create_file_perms;
  allow adbd shell_test_data_file:lnk_file create_file_perms;
  
@@ -72,7 +72,7 @@ index b87b31916..5721b9413 100644
  ###
  ### Neverallow rules
  ###
-@@ -217,7 +224,7 @@ allow adbd shell_test_data_file:lnk_file create_file_perms;
+@@ -227,7 +234,7 @@ allow adbd shell_test_data_file:lnk_file create_file_perms;
  # No transitions from adbd to non-shell, non-crash_dump domains. adbd only ever
  # transitions to the shell or tradeinmode domain (except when it crashes). In
  # particular, we never want to see a transition from adbd to su (aka "adb root")
@@ -82,10 +82,10 @@ index b87b31916..5721b9413 100644
      domain
      userdebug_or_eng(`-su')
 diff --git a/private/apexd.te b/private/apexd.te
-index 58a365869..cf488db39 100644
+index 7c800f631..f4c4f69a4 100644
 --- a/private/apexd.te
 +++ b/private/apexd.te
-@@ -217,6 +217,9 @@ neverallow { domain -apexd -init } apexd_prop:property_service set;
+@@ -233,6 +233,9 @@ neverallow { domain -apexd -init } apexd_prop:property_service set;
  # only apexd can write apex-info-list.xml
  neverallow { domain -apexd } apex_info_file:file no_w_file_perms;
  
@@ -93,13 +93,13 @@ index 58a365869..cf488db39 100644
 +allow apexd linux_pfa_file:{ file dir lnk_file } *;
 +
  # Only apexd and init should be allowed to manage /apex mounts
- # A note on otapreopt_chroot. It used to mount APEXes during postainstall stage of A/B OTAs,
- # but starting from S it just calls into apexd to prepare /apex for otapreoprt. Once the sepolicies
+ # dexopt_chroot_setup calls apexd to prepare /apex for Pre-reboot Dexopt, but it
+ # needs to mount a tmpfs on /apex for apexd to work on.
 diff --git a/private/file.te b/private/file.te
-index 189fb4789..8dff9313d 100644
+index b832da44c..6a6692fef 100644
 --- a/private/file.te
 +++ b/private/file.te
-@@ -146,6 +146,8 @@ type compos_key_helper_exec, exec_type, file_type, system_file_type;
+@@ -165,6 +165,8 @@ type compos_key_helper_exec, exec_type, file_type, system_file_type;
  type prng_seeder_socket, file_type, coredomain_socket, mlstrustedobject;
  
  # /proc/device-tree/avf and /sys/firmware/devicetree/base/avf
@@ -109,12 +109,12 @@ index 189fb4789..8dff9313d 100644
  type proc_dt_avf, fs_type, proc_type;
  
 diff --git a/private/file_contexts b/private/file_contexts
-index d6f7113f3..06827ec7a 100644
+index bc79eebf7..e24599fed 100644
 --- a/private/file_contexts
 +++ b/private/file_contexts
-@@ -939,6 +939,14 @@
+@@ -954,6 +954,14 @@
+ /(system|product)/bin/check_dynamic_partitions  u:object_r:postinstall_exec:s0
  /(system|product)/bin/otapreopt_script          u:object_r:postinstall_exec:s0
- /(system|product)/bin/otapreopt                 u:object_r:postinstall_dexopt_exec:s0
  
 +#############################
 +# Pacman for Android
@@ -128,10 +128,10 @@ index d6f7113f3..06827ec7a 100644
  # For Pre-reboot Dexopt (see art/dexopt_chroot_setup/README.md)
  
 diff --git a/private/init.te b/private/init.te
-index 012ef0bde..34f8dc134 100644
+index 31c4103bf..8ccb3b132 100644
 --- a/private/init.te
 +++ b/private/init.te
-@@ -110,6 +110,8 @@ allow init {
+@@ -119,6 +119,8 @@ allow init {
    -port_device
  }:chr_file setattr;
  
@@ -223,10 +223,10 @@ index 000000000..2c7b3e2d6
 +dontaudit pfa unlabeled:vsock_socket *;
 +dontaudit pfa self:perf_event *;
 diff --git a/private/seapp_contexts b/private/seapp_contexts
-index 25ed1ba2a..3dc3f1984 100644
+index a6e829dd2..53d149215 100644
 --- a/private/seapp_contexts
 +++ b/private/seapp_contexts
-@@ -165,8 +165,8 @@ neverallow user=_isolated isIsolatedComputeApp=true domain=((?!isolated_compute_
+@@ -155,8 +155,8 @@ neverallow user=_isolated isIsolatedComputeApp=true domain=((?!isolated_compute_
  neverallow user=shell domain=((?!shell).)*
  
  # only the package named com.android.shell can run in the shell domain
@@ -237,7 +237,7 @@ index 25ed1ba2a..3dc3f1984 100644
  
  # Ephemeral Apps must run in the ephemeral_app domain
  neverallow isEphemeralApp=true domain=((?!ephemeral_app).)*
-@@ -188,6 +188,7 @@ user=secure_element seinfo=platform domain=secure_element levelFrom=all
+@@ -178,6 +178,7 @@ user=secure_element seinfo=platform domain=secure_element levelFrom=all
  user=radio seinfo=platform domain=radio type=radio_data_file
  user=shared_relro domain=shared_relro levelFrom=all
  user=shell seinfo=platform domain=shell name=com.android.shell type=shell_data_file
@@ -246,12 +246,12 @@ index 25ed1ba2a..3dc3f1984 100644
  user=_isolated domain=isolated_app levelFrom=user
  user=_isolated isIsolatedComputeApp=true domain=isolated_compute_app levelFrom=user
 diff --git a/public/file.te b/public/file.te
-index 94483a3bf..5f4344758 100644
+index ed4d82248..96f81f81b 100644
 --- a/public/file.te
 +++ b/public/file.te
-@@ -15,6 +15,8 @@ starting_at_board_api(202504, `
- ')
- 
+@@ -11,6 +11,8 @@ type binderfs_logs_stats, fs_type;
+ type binderfs_logs_transactions, fs_type;
+ type binderfs_logs_transaction_history, fs_type;
  type binderfs_features, fs_type;
 +# PFA
 +type linux_pfa_file, data_file_type, file_type, exec_type;
@@ -266,7 +266,7 @@ index 000000000..b55a8069a
 @@ -0,0 +1 @@
 +type pfa, domain ;
 diff --git a/vendor/mediacodec.te b/vendor/mediacodec.te
-index 84f24219a..ed5cbe9b9 100644
+index de36a3fd6..60b269b47 100644
 --- a/vendor/mediacodec.te
 +++ b/vendor/mediacodec.te
 @@ -23,6 +23,8 @@ allow mediacodec dmabuf_system_heap_device:chr_file r_file_perms;
@@ -279,5 +279,5 @@ index 84f24219a..ed5cbe9b9 100644
  
  # get aac_drc_* properties
 -- 
-2.49.0
+2.52.0
 
