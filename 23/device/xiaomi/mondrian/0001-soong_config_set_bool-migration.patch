@@ -1,0 +1,23 @@
+From 143efef27f524d003569bfea9a8dfcf9ea2cedc5 Mon Sep 17 00:00:00 2001
+From: Levi Zim <rsworktech@outlook.com>
+Date: Sat, 17 Jan 2026 11:36:01 +0800
+Subject: [PATCH] soong_config_set_bool migration
+
+Change-Id: I0b079f09a663a435107e3387981e3444d1abeb25
+---
+ device.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/device.mk b/device.mk
+index 8c9a579..97396d8 100644
+--- a/device.mk
++++ b/device.mk
+@@ -48,4 +48,4 @@ PRODUCT_COPY_FILES += \
+ 
+ # Vibrator
+ $(call soong_config_set,qti_vibrator,effect_lib,libqtivibratoreffect.xiaomi)
+-$(call soong_config_set,qti_vibrator,use_effect_stream,true)
++$(call soong_config_set_bool,qti_vibrator,use_effect_stream,true)
+-- 
+2.52.0
+
