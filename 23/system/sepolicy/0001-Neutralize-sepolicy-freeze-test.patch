@@ -1,4 +1,4 @@
-From e36e9e9cbc03c46dfbaf9e685d13bfb92bf1ce7c Mon Sep 17 00:00:00 2001
+From 78539e323954b6967444ba39cda1125e9b7c0b85 Mon Sep 17 00:00:00 2001
 From: kxxt <rsworktech@outlook.com>
 Date: Thu, 23 Jan 2025 10:38:02 +0800
 Subject: [PATCH] Neutralize sepolicy freeze test
@@ -7,11 +7,12 @@ We are essentially a fork of Android changing the public sepolicy
 
 Change-Id: Ie3ddaf051729c82a0d89122d5997ed7be6ff095d
 ---
- tests/sepolicy_freeze_test.py | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ tests/sepolicy_freeze_test.py  | 3 ++-
+ tests/treble_sepolicy_tests.py | 1 +
+ 2 files changed, 3 insertions(+), 1 deletion(-)
 
 diff --git a/tests/sepolicy_freeze_test.py b/tests/sepolicy_freeze_test.py
-index fa05eb1938..eaa7d448e8 100644
+index fa05eb193..eaa7d448e 100644
 --- a/tests/sepolicy_freeze_test.py
 +++ b/tests/sepolicy_freeze_test.py
 @@ -61,7 +61,7 @@ def do_main():
@@ -31,6 +32,18 @@ index fa05eb1938..eaa7d448e8 100644
  
  if __name__ == '__main__':
      do_main()
+diff --git a/tests/treble_sepolicy_tests.py b/tests/treble_sepolicy_tests.py
+index ff1a34817..c1b9ac350 100644
+--- a/tests/treble_sepolicy_tests.py
++++ b/tests/treble_sepolicy_tests.py
+@@ -51,6 +51,7 @@ def TestNoUnmappedNewTypes(base_pub_policy, old_pub_policy, mapping):
+         ret += "See examples of how to fix this:\n"
+         ret += "https://android-review.googlesource.com/c/platform/system/sepolicy/+/781036\n"
+         ret += "https://android-review.googlesource.com/c/platform/system/sepolicy/+/852612\n"
++        ret = ""
+     return ret
+ 
+ ###
 -- 
-2.48.1
+2.39.5
 
