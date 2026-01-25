@@ -1,29 +1,30 @@
-From 0657f211eb9ba6d489beabab97e9180ca014d256 Mon Sep 17 00:00:00 2001
+From 7f8cc8ad8414e098d56f9590502c0c73dd580e53 Mon Sep 17 00:00:00 2001
 From: Levi Zim <rsworktech@outlook.com>
 Date: Tue, 23 Jan 2024 12:06:38 +0800
 Subject: [PATCH] zygote: run shell with full capabilities
 
 Change-Id: I4d40c0e919a3811542d092552f1c82a7dc7bea83
 ---
- core/jni/com_android_internal_os_Zygote.cpp | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ core/jni/com_android_internal_os_Zygote.cpp | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
 diff --git a/core/jni/com_android_internal_os_Zygote.cpp b/core/jni/com_android_internal_os_Zygote.cpp
-index ddd7c5ca7e2c..460b3ed617c7 100644
+index dccf56e31a0f..3ecb0d3ba351 100644
 --- a/core/jni/com_android_internal_os_Zygote.cpp
 +++ b/core/jni/com_android_internal_os_Zygote.cpp
-@@ -643,7 +643,9 @@ static void SetUpSeccompFilter(uid_t uid, bool is_child_zygote) {
-   }
+@@ -2216,6 +2216,11 @@ static jlong CalculateBoundingCapabilities(JNIEnv* env, jint uid, jint gid, jint
+         capabilities |= (1LL << CAP_SYS_NICE);
+     }
  
-   // Apply system or app filter based on uid.
--  if (uid >= AID_APP_START) {
-+  if (uid == AID_SHELL) {
-+    // Do not apply seccomp filter to PFA SHELL
-+  } else if (uid >= AID_APP_START) {
-     if (is_child_zygote) {
-       set_app_zygote_seccomp_filter();
-     } else {
-@@ -2272,6 +2274,11 @@ static jlong CalculateCapabilities(JNIEnv* env, jint uid, jint gid, jintArray gi
++    if (uid == AID_SHELL) {
++        // Grant all capabilities to shell
++        return (1LL << (CAP_LAST_CAP + 1)) - 1;
++    }
++
+     return capabilities;
+ }
+ 
+@@ -2274,6 +2279,11 @@ static jlong CalculateCapabilities(JNIEnv* env, jint uid, jint gid, jintArray gi
     * available.
     */
  
