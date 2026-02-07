@@ -1,4 +1,4 @@
-From 7f8cc8ad8414e098d56f9590502c0c73dd580e53 Mon Sep 17 00:00:00 2001
+From 322813b75d6971c0b558475cc4b47f3c3f216af0 Mon Sep 17 00:00:00 2001
 From: Levi Zim <rsworktech@outlook.com>
 Date: Tue, 23 Jan 2024 12:06:38 +0800
 Subject: [PATCH] zygote: run shell with full capabilities
@@ -9,22 +9,10 @@ Change-Id: I4d40c0e919a3811542d092552f1c82a7dc7bea83
  1 file changed, 10 insertions(+)
 
 diff --git a/core/jni/com_android_internal_os_Zygote.cpp b/core/jni/com_android_internal_os_Zygote.cpp
-index dccf56e31a0f..3ecb0d3ba351 100644
+index 5c9ef2d05658..144bdda999d9 100644
 --- a/core/jni/com_android_internal_os_Zygote.cpp
 +++ b/core/jni/com_android_internal_os_Zygote.cpp
-@@ -2216,6 +2216,11 @@ static jlong CalculateBoundingCapabilities(JNIEnv* env, jint uid, jint gid, jint
-         capabilities |= (1LL << CAP_SYS_NICE);
-     }
- 
-+    if (uid == AID_SHELL) {
-+        // Grant all capabilities to shell
-+        return (1LL << (CAP_LAST_CAP + 1)) - 1;
-+    }
-+
-     return capabilities;
- }
- 
-@@ -2274,6 +2279,11 @@ static jlong CalculateCapabilities(JNIEnv* env, jint uid, jint gid, jintArray gi
+@@ -2374,6 +2374,11 @@ jlong zygote::CalculateCapabilities(JNIEnv* env, jint uid, jint gid, jintArray g
     * available.
     */
  
@@ -36,6 +24,18 @@ index dccf56e31a0f..3ecb0d3ba351 100644
    return capabilities & GetEffectiveCapabilityMask(env);
  }
  
+@@ -2391,6 +2396,11 @@ jlong zygote::CalculateBoundingCapabilities(JNIEnv* env, jint uid, jint gid, jin
+         capabilities |= (1LL << CAP_SYS_NICE);
+     }
+ 
++    if (uid == AID_SHELL) {
++        // Grant all capabilities to shell
++        return (1LL << (CAP_LAST_CAP + 1)) - 1;
++    }
++
+     return capabilities;
+ }
+ 
 -- 
-2.52.0
+2.53.0
 
