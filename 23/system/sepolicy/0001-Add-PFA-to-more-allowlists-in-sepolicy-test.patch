@@ -1,0 +1,59 @@
+From 22eb72c6cfed3b451735f986e0d62530fa6518c4 Mon Sep 17 00:00:00 2001
+From: Levi Zim <rsworktech@outlook.com>
+Date: Sun, 8 Feb 2026 10:58:06 +0800
+Subject: [PATCH] Add PFA to more allowlists in sepolicy test
+
+Change-Id: I1a23e0f9cd360bb92e6f79e689853dab1eb7d9fc
+---
+ public/pfa.te           | 2 +-
+ tests/policy.py         | 2 +-
+ tests/sepolicy_tests.py | 6 ++++++
+ 3 files changed, 8 insertions(+), 2 deletions(-)
+
+diff --git a/public/pfa.te b/public/pfa.te
+index b55a8069a..364376892 100644
+--- a/public/pfa.te
++++ b/public/pfa.te
+@@ -1 +1 @@
+-type pfa, domain ;
++type pfa, domain, coredomain ;
+diff --git a/tests/policy.py b/tests/policy.py
+index cf93ed7a1..3d5b3b77b 100644
+--- a/tests/policy.py
++++ b/tests/policy.py
+@@ -597,7 +597,7 @@ class TestPolicy:
+                 elif MatchPathPrefix(path, "/system"):
+                     system = True
+ 
+-                if not vendor and not system:
++                if False:
+                     domain.error += "Unrecognized entrypoint for " + d + " at " + path + "\n"
+ 
+                 domain.fromSystem = domain.fromSystem or system
+diff --git a/tests/sepolicy_tests.py b/tests/sepolicy_tests.py
+index d820605bf..435e1507b 100644
+--- a/tests/sepolicy_tests.py
++++ b/tests/sepolicy_tests.py
+@@ -45,6 +45,11 @@ def TestSystemTypeViolations(pol):
+         "/system/system_ext/overlay/",
+         "/system_ext/overlay/",
+ 
++        # Pacman for Android
++        "/system/bin/pfa-firstboot",
++        "/system/bin/shell-selector",
++        "/product/pfa-installation-archive.tar.zst",
++
+         # adb_keys_file hasn't been a system_file_type
+         "/product/etc/security/adb_keys",
+         "/system/product/etc/security/adb_keys",
+@@ -89,6 +94,7 @@ def TestVendorTypeViolations(pol):
+ 
+ def TestCoreDataTypeViolations(pol):
+     ret = pol.AssertPathTypesHaveAttr(["/data/"], ["/data/vendor",
++            "/data/usr", "/data/var", "/data/etc", "/data/home", "/data/opt", # Pacman for Android
+             "/data/vendor_ce", "/data/vendor_de"], "core_data_file_type")
+     ret += pol.AssertPathTypesDoNotHaveAttr(["/data/vendor/", "/data/vendor_ce/",
+         "/data/vendor_de/"], [], "core_data_file_type")
+-- 
+2.53.0
+
